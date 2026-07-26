@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gateway Architecture — AI Gateway Lab</title>
+<meta name="description" content="Reference architecture for a self-hosted AI API gateway: trust boundaries, data flow, key custody and failure domains.">
+<link rel="canonical" href="https://aigatewaylab.xyz/architecture/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/architecture/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/architecture/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/architecture/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gateway Architecture — AI Gateway Lab">
+<meta property="og:description" content="Reference architecture for a self-hosted AI API gateway: trust boundaries, data flow, key custody and failure domains.">
+<meta property="og:url" content="https://aigatewaylab.xyz/architecture/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl active" href="../architecture/">Architecture</a><a class="nl" href="../demo/">Live Demo</a><a class="nl" href="../docs/">Deployment Docs</a><a class="nl" href="../security/">Security</a><a class="nl" href="../case-study/">Case Study</a><a class="nl" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/architecture/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Architecture</h1>
+<p class="lead">The reference layout I deploy, and — more important — where
+the trust boundaries sit.</p>
+
+<h2>Data flow</h2>
+<div class="diagram">
+ Clients (your services, staff tools)
+   │  virtual keys (vk-...), never provider keys
+   ▼
+┌───────────────────────────────────────────────┐
+│  Reverse proxy  (Caddy / nginx)               │  TLS, HSTS, rate limit,
+│  - terminates HTTPS                           │  security headers
+└───────────────┬───────────────────────────────┘
+                ▼
+┌───────────────────────────────────────────────┐
+│  Gateway  (LiteLLM / one-api class)           │
+│  - auth: virtual key → team, quota, models    │
+│  - routing: model name → upstream pool        │
+│  - usage metering, request logging (redacted) │
+│  - failover: retry next healthy upstream      │
+└──────┬──────────────────────────┬─────────────┘
+       ▼                          ▼
+┌──────────────┐          ┌──────────────┐
+│ Key vault    │          │ SQLite/Postgres│
+│ (env/file,   │          │ usage, keys,   │
+│  0600, no    │          │ audit log      │
+│  web access) │          └──────────────┘
+└──────┬───────┘
+       ▼  provider keys (sk-..., owned by YOU)
+ Upstream providers (OpenAI, Anthropic, Google, ... official APIs)
+</div>
+
+<h2>Trust boundaries</h2>
+<table>
+<tr><th>Boundary</th><th>Rule</th></tr>
+<tr><td>Internet → proxy</td><td>Only 443 exposed. Admin UI is not on the
+public interface — SSH tunnel or VPN only.</td></tr>
+<tr><td>Proxy → gateway</td><td>Loopback or private network. The gateway
+container never binds a public port.</td></tr>
+<tr><td>Gateway → vault</td><td>Provider keys are readable by the gateway
+process user only (0600, non-root). They never appear in logs, error
+messages, or client responses.</td></tr>
+<tr><td>Client → gateway</td><td>Clients hold revocable virtual keys with
+quotas. Compromise of a client burns one virtual key, not the provider
+account.</td></tr>
+</table>
+
+<h2>Failure domains</h2>
+<ul>
+<li><strong>Upstream outage:</strong> health checks mark the upstream
+unhealthy; router retries the request against the next configured provider
+offering the same model class. The <a href="../case-study/">case study</a>
+shows a real failover timeline (with synthetic data).</li>
+<li><strong>Gateway crash:</strong> systemd/compose restart policy plus an
+external health probe (the kind shown in my
+<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
+project) alerting on state change.</li>
+<li><strong>Host loss:</strong> nightly encrypted backup of the database and
+config; restore drill documented and rehearsed — restore time depends on
+image pull and DNS, measured per deployment during handover.</li>
+</ul>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

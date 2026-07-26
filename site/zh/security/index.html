@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>安全模型 — AI Gateway Lab</title>
+<meta name="description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故恢复。">
+<link rel="canonical" href="https://aigatewaylab.xyz/zh/security/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/security/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/security/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/security/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="安全模型 — AI Gateway Lab">
+<meta property="og:description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故恢复。">
+<meta property="og:url" content="https://aigatewaylab.xyz/zh/security/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../static/css/style.css">
+<script src="../../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../../zh/">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../../zh/">首页</a><a class="nl" href="../../zh/architecture/">架构</a><a class="nl" href="../../zh/demo/">在线演示</a><a class="nl" href="../../zh/docs/">部署文档</a><a class="nl active" href="../../zh/security/">安全</a><a class="nl" href="../../zh/case-study/">案例研究</a><a class="nl" href="../../zh/compliance/">合规</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../../security/" hreflang="en">EN</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">背景风格</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>安全</h1>
+<p class="lead">网关运维里那些在顺风演示里看不见、在事故中起决定作用的部分。</p><h2>密钥保管</h2>
+<table>
+<tr><th>秘密</th><th>放在哪里</th><th>绝不允许出现在哪里</th></tr><tr><td>服务商密钥 (sk-…)</td><td>宿主机上 0600 的 env 文件，或密钥管理服务；仅网关进程用户可读</td><td>日志、报错正文、客户端响应、git、容器镜像、明文备份</td></tr><tr><td>虚拟密钥 (vk-…)</td><td>在网关数据库中散列存储</td><td>创建之后的任何完整展示——UI 只做一次性展示，日志只记前缀</td></tr><tr><td>管理员凭证</td><td>密码管理器；开启 TOTP</td>
+<td>共享聊天、仓库里的 .env 文件</td></tr>
+</table>
+
+<h2>最小权限</h2>
+<ul>
+<li>容器以专用非 root UID 运行，根文件系统只读，临时空间走 tmpfs。</li><li>管理面绑定 localhost；访问它需要 SSH 隧道或 VPN 成员资格。公网接口只承载推理流量。</li><li>数据库用户运行期没有 DDL 权限；迁移作为独立步骤执行。</li><li>每个客户团队有自己的虚拟密钥，带模型白名单与预算——吊销一个客户绝不波及另一个。</li>
+</ul>
+
+<h2>日志脱敏</h2>
+<p>网关位于请求路径上，它的日志天然是个蜜罐。部署时做了如下脱敏：</p>
+<ul>
+<li><code>Authorization</code> 头 → <code>vk-****后4位</code></li>
+<li>提示词与补全正文 → 默认只记录 token 数；除非客户为调试显式开启内容日志，且带 TTL</li>
+<li>上游报错正文 → 服务商密钥在错误到达客户端或日志之前被剥离</li>
+</ul>
+<p><a href="../demo/">演示</a>里的请求日志展示的正是这个形态：足够运维，不值得偷。</p><h2>恢复流程（排练过的，不是纸上谈兵）</h2>
+<table>
+<tr><th>事故</th><th>响应</th></tr><tr><td>虚拟密钥泄漏</td><td>吊销该密钥（请求 fail-closed），复查其使用窗口的审计日志，按同样策略补发新钥。爆炸半径：这把密钥的配额。</td></tr><tr><td>疑似服务商密钥泄漏</td><td>在服务商侧轮换，更新密钥库条目，重启网关（重试代理挡住的几秒停机），用金丝雀请求确认。</td></tr><tr><td>疑似主机沦陷</td><td>冻结：先在服务商侧吊销服务商密钥——那才是王冠。用干净镜像加加密备份重建；绝不从沦陷主机恢复可执行文件。</td></tr><tr><td>数据丢失</td><td>恢复昨夜加密转储；转储之后的用量记录确认丢失并如实承认——账务以服务商控制台对账。</td></tr>
+</table>
+
+</main>
+<footer><div class="foot-inner">
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../../zh/security/">安全说明</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../../static/js/theme-ui.js"></script>
+</body>
+</html>

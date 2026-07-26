@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Hosted AI API Gateway Deployment & Operations — AI Gateway Lab</title>
+<meta name="description" content="Deployment, hardening and operations of self-hosted AI API gateways: Docker, HTTPS, key management, monitoring, backup and failover. Independent demonstration site.">
+<link rel="canonical" href="https://aigatewaylab.xyz/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Self-Hosted AI API Gateway Deployment & Operations — AI Gateway Lab">
+<meta property="og:description" content="Deployment, hardening and operations of self-hosted AI API gateways: Docker, HTTPS, key management, monitoring, backup and failover. Independent demonstration site.">
+<meta property="og:url" content="https://aigatewaylab.xyz/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="./static/css/style.css">
+<script src="./static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="./">AI<span>Gateway</span>Lab</a>
+  <a class="nl active" href="./">Home</a><a class="nl" href="./architecture/">Architecture</a><a class="nl" href="./demo/">Live Demo</a><a class="nl" href="./docs/">Deployment Docs</a><a class="nl" href="./security/">Security</a><a class="nl" href="./case-study/">Case Study</a><a class="nl" href="./compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="./zh/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<div class="hero">
+<div>
+<p class="kicker">Deployment &middot; Hardening &middot; Operations</p>
+<h1>Self-Hosted AI API Gateway<br>Deployment &amp; Operations</h1>
+<p class="lead">I deploy, harden and operate self-hosted AI API gateways for
+teams that want one controlled entry point for their LLM traffic — with their
+own keys, their own logs, and their own infrastructure.</p>
+<p class="cta-row">
+  <a class="btn" href="mailto:hello@aigatewaylab.xyz">Contact me</a>
+  <a class="btn ghost btn-gap" href="demo/">See the live demo</a>
+</p>
+</div>
+<div class="hero-console" aria-label="Example deployment session (static illustration)">
+  <div class="hc-bar"><span class="hc-dot"></span><span class="hc-dot"></span><span class="hc-dot"></span>deploy &middot; verify &middot; hand over</div>
+<pre><code><span class="hc-c"># every deployment ends with proof, not promises</span>
+<span class="hc-k">$</span> deployctl preflight --remote gateway-host
+<span class="hc-o">ok</span>  ports 80/443 free &middot; docker 27.x &middot; 4GB free
+<span class="hc-k">$</span> deployctl apply --plan plan.json
+<span class="hc-o">ok</span>  container healthy &middot; bound 127.0.0.1 only
+<span class="hc-k">$</span> deployctl verify --target gateway-host
+<span class="hc-o">ok</span>  TLS A &middot; HSTS &middot; headers 6/6 &middot; logs redacted
+<span class="hc-c"># handover: runbook + backups + your keys, not mine</span></code></pre>
+</div>
+</div>
+
+<h2>The problem</h2>
+<div class="grid c3">
+  <div class="card glass"><h3>Keys everywhere</h3><p class="dim">Provider API keys
+  pasted into notebooks, CI variables and desktop apps. Nobody knows which key
+  is used where, or what it would cost to rotate one.</p></div>
+  <div class="card glass"><h3>No spend visibility</h3><p class="dim">The invoice
+  arrives at month end. Which team, which feature, which runaway script spent
+  the budget? The provider dashboard cannot tell you.</p></div>
+  <div class="card glass"><h3>Provider lock-in at the code level</h3><p class="dim">
+  Every service hardcodes one vendor SDK. Switching models — or surviving an
+  outage — means a code change and a deploy.</p></div>
+</div>
+
+<h2>What a gateway fixes</h2>
+<p>A self-hosted gateway (open-source projects such as LiteLLM, one-api or
+Sub2API-class deployments) gives you one OpenAI-compatible endpoint in front
+of every upstream you use. Your services get <em>virtual keys</em> you can
+create, cap and revoke; upstream keys stay in one vault. You get per-key
+usage, rate limits, model routing and failover — on your own server.</p>
+
+<h2>What I deliver</h2>
+<div class="grid c2">
+  <div class="card"><h3>Deployment</h3><p class="dim">Docker Compose or
+  systemd deployment, reverse proxy with HTTPS and HSTS, non-root containers,
+  a documented directory layout, and an upgrade path that has been tested,
+  not guessed.</p></div>
+  <div class="card"><h3>Hardening</h3><p class="dim">Key vaulting with
+  restricted permissions, admin plane separated from the data plane, security
+  headers, fail2ban, log redaction so secrets never land in plaintext logs.</p></div>
+  <div class="card"><h3>Operations</h3><p class="dim">Health checks and
+  alerting, usage dashboards, backup and restore drills with a written
+  runbook, quota policies per team and per key.</p></div>
+  <div class="card"><h3>Handover</h3><p class="dim">You own everything at the
+  end: infrastructure, documentation, and a recorded walkthrough. No
+  dependency on me to keep it running.</p></div>
+</div>
+
+<h2>Scope boundaries, stated up front</h2>
+<div class="notice">I deploy gateways that route traffic under <strong>your
+provider accounts and API keys</strong> (or keys your organisation is
+licensed to use). I do not build or operate systems for reselling consumer
+subscriptions as APIs, sharing or pooling account quotas, bypassing provider
+rate limits, or extracting credentials. See the
+<a href="compliance/">compliance page</a> for the full matrix.</div>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="./security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="./static/js/theme-ui.js"></script>
+</body>
+</html>

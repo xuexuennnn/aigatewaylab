@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Model — AI Gateway Lab</title>
+<meta name="description" content="Key custody, least privilege, log redaction and incident recovery for self-hosted AI API gateways.">
+<link rel="canonical" href="https://aigatewaylab.xyz/security/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/security/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/security/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/security/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Security Model — AI Gateway Lab">
+<meta property="og:description" content="Key custody, least privilege, log redaction and incident recovery for self-hosted AI API gateways.">
+<meta property="og:url" content="https://aigatewaylab.xyz/security/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl" href="../architecture/">Architecture</a><a class="nl" href="../demo/">Live Demo</a><a class="nl" href="../docs/">Deployment Docs</a><a class="nl active" href="../security/">Security</a><a class="nl" href="../case-study/">Case Study</a><a class="nl" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/security/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Security</h1>
+<p class="lead">The parts of gateway operations that are invisible in a happy
+demo and decisive in an incident.</p>
+
+<h2>Key custody</h2>
+<table>
+<tr><th>Secret</th><th>Where it lives</th><th>Where it must never appear</th></tr>
+<tr><td>Provider keys (sk-…)</td><td>env file 0600 on the host, or a secrets
+manager; readable only by the gateway process user</td><td>logs, error
+bodies, client responses, git, container images, backups in plaintext</td></tr>
+<tr><td>Virtual keys (vk-…)</td><td>hashed at rest in the gateway DB</td>
+<td>anywhere in full after creation — the UI shows a one-time reveal, logs
+show a prefix</td></tr>
+<tr><td>Admin credentials</td><td>password manager; TOTP enabled</td>
+<td>shared chats, .env files in repos</td></tr>
+</table>
+
+<h2>Least privilege</h2>
+<ul>
+<li>Containers run as a dedicated non-root UID with a read-only root
+filesystem and a tmpfs for scratch space.</li>
+<li>The admin plane binds to localhost; reaching it requires SSH tunnel or
+VPN membership. The public interface serves inference traffic only.</li>
+<li>Database user has no DDL rights at runtime; migrations run as a separate
+step.</li>
+<li>Each client team gets its own virtual keys with model allow-lists and
+budgets — revoking one client never touches another.</li>
+</ul>
+
+<h2>Log redaction</h2>
+<p>Gateways sit on the request path, so their logs are a honeypot by default.
+The deployment redacts:</p>
+<ul>
+<li><code>Authorization</code> headers → <code>vk-****last4</code></li>
+<li>Prompt and completion bodies → logged only as token counts unless the
+client explicitly opts into content logging for debugging, with a TTL</li>
+<li>Upstream error bodies → provider keys stripped before the error reaches
+client or log</li>
+</ul>
+<p>The <a href="../demo/">demo</a> request log shows exactly this shape:
+enough to operate, nothing worth stealing.</p>
+
+<h2>Recovery flows (rehearsed, not theoretical)</h2>
+<table>
+<tr><th>Incident</th><th>Response</th></tr>
+<tr><td>Virtual key leaked</td><td>Revoke the key (requests fail closed),
+review its usage window in the audit log, issue a replacement with the same
+policy. Blast radius: that key’s quota.</td></tr>
+<tr><td>Provider key suspected</td><td>Rotate at the provider, update the
+vault entry, restart the gateway (seconds of downtime behind a retrying
+proxy), verify with a canary request.</td></tr>
+<tr><td>Host compromise suspected</td><td>Freeze: revoke provider keys at the
+provider first — they are the crown jewels. Rebuild from a clean image plus
+the encrypted backup; never restore executables from the compromised host.</td></tr>
+<tr><td>Data loss</td><td>Restore last night’s encrypted dump; usage rows
+since the dump are gone and acknowledged as gone — billing reconciles against
+provider dashboards.</td></tr>
+</table>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

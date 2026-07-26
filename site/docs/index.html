@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deployment Documentation — AI Gateway Lab</title>
+<meta name="description" content="Step-by-step: Docker deployment, HTTPS, backups, upgrades and monitoring for a self-hosted AI API gateway.">
+<link rel="canonical" href="https://aigatewaylab.xyz/docs/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/docs/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/docs/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/docs/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Deployment Documentation — AI Gateway Lab">
+<meta property="og:description" content="Step-by-step: Docker deployment, HTTPS, backups, upgrades and monitoring for a self-hosted AI API gateway.">
+<meta property="og:url" content="https://aigatewaylab.xyz/docs/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl" href="../architecture/">Architecture</a><a class="nl" href="../demo/">Live Demo</a><a class="nl active" href="../docs/">Deployment Docs</a><a class="nl" href="../security/">Security</a><a class="nl" href="../case-study/">Case Study</a><a class="nl" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/docs/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Deployment Docs</h1>
+<p class="lead">The condensed, public version of the runbook every client
+receives. Commands are real and tested against the open-source gateway stack
+in the demo; hostnames and paths are examples.</p>
+
+<h2>1 · Docker deployment</h2>
+<pre><code># docker-compose.yml (excerpt — full file in the GitHub repo)
+services:
+  gateway:
+    image: ghcr.io/berriai/litellm:main-stable   # or your gateway of choice
+    user: "10001:10001"            # non-root
+    read_only: true                # read-only rootfs
+    tmpfs: [/tmp]
+    env_file: /srv/gateway/secrets.env   # 0600, root:root
+    expose: ["4000"]               # internal only — no public bind
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/health/liveliness"]
+      interval: 30s
+      retries: 3</code></pre>
+<p>Principles: the gateway container never publishes a host port; only the
+reverse proxy does. Secrets live in an env file owned by root with mode 0600,
+mounted read-only. The container runs as a fixed non-root UID with a
+read-only filesystem.</p>
+
+<h2>2 · HTTPS with automatic renewal</h2>
+<pre><code># Caddyfile — HTTPS, HSTS and headers in 8 lines
+example.com {{
+  encode gzip
+  header {{
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+  }}
+  reverse_proxy 127.0.0.1:4000
+}}</code></pre>
+<p>Caddy provisions and renews certificates automatically. With nginx the
+same is done with certbot and a systemd timer; both variants are in the repo.</p>
+
+<h2>3 · Backups that restore</h2>
+<pre><code># nightly: dump DB + config, encrypt, keep 14 days
+sqlite3 /srv/gateway/data/gateway.db ".backup /tmp/gw.db"
+tar czf - -C /srv/gateway config data | age -r "$BACKUP_PUBKEY"   &gt; /backup/gateway-$(date +%F).tar.gz.age
+find /backup -name "gateway-*.age" -mtime +14 -delete</code></pre>
+<p>A backup is not a backup until it has been restored. The runbook includes
+a quarterly restore drill: restore to a scratch directory, start a second
+gateway instance on a private port, run the smoke tests, tear down.</p>
+
+<h2>4 · Upgrades without surprises</h2>
+<ol>
+<li>Read the release notes; check for schema migrations.</li>
+<li>Snapshot: backup as above, note current image digest.</li>
+<li>Pull the new image, restart, watch the health endpoint and error rate.</li>
+<li>Regression: run the smoke suite (key create → chat request → usage row).</li>
+<li>Rollback path: previous image digest + restored DB — rehearsed, so the
+timeline is known per deployment, not guessed.</li>
+</ol>
+
+<h2>5 · Monitoring</h2>
+<ul>
+<li><code>/health</code> endpoints probed by an external checker with
+transition-based alerting (alert once on failure, once on recovery — no
+storms).</li>
+<li>Disk, memory and certificate-expiry checks on the host.</li>
+<li>Usage anomaly review: a spike on one virtual key is a conversation, not
+a mystery.</li>
+</ul>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

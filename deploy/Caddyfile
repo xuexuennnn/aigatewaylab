@@ -1,0 +1,28 @@
+# Caddy fronts the container; TLS + HSTS + rate limiting at the edge.
+# Deploy target and DNS are decided at the DNS gate — do not start before that.
+aigatewaylab.xyz {
+    encode gzip
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+    }
+    reverse_proxy 127.0.0.1:8890
+    log {
+        output file /var/log/caddy/agl-access.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+        format filter {
+            wrap json
+            fields {
+                request>uri delete
+                request>headers>Referer delete
+                request>headers>Cookie delete
+                request>headers>Authorization delete
+            }
+        }
+    }
+}
+www.aigatewaylab.xyz {
+    redir https://aigatewaylab.xyz{uri} permanent
+}

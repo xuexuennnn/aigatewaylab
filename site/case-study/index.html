@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Study: Migration, Routing & Failover — AI Gateway Lab</title>
+<meta name="description" content="An anonymised gateway engagement: consolidating scattered API keys, adding model routing, and surviving an upstream outage.">
+<link rel="canonical" href="https://aigatewaylab.xyz/case-study/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/case-study/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/case-study/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/case-study/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Case Study: Migration, Routing & Failover — AI Gateway Lab">
+<meta property="og:description" content="An anonymised gateway engagement: consolidating scattered API keys, adding model routing, and surviving an upstream outage.">
+<meta property="og:url" content="https://aigatewaylab.xyz/case-study/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl" href="../architecture/">Architecture</a><a class="nl" href="../demo/">Live Demo</a><a class="nl" href="../docs/">Deployment Docs</a><a class="nl" href="../security/">Security</a><a class="nl active" href="../case-study/">Case Study</a><a class="nl" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/case-study/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Case Study</h1>
+<div class="notice">Anonymised and generalised from real operational work on
+self-hosted gateway deployments. Identifying details, hostnames, exact
+figures and vendor mix are altered; the timeline structure and the failure
+modes are the real lesson. All numbers below are illustrative of the pattern,
+not billing records.</div>
+
+<h2>Starting point</h2>
+<p>A small product team ran three services against two AI providers. Each
+service held its own provider key in its own env file; one key had been
+shared over chat during an incident and never rotated. There was no per-team
+usage view — the invoice was one number.</p>
+
+<h2>Phase 1 · Consolidation (week 1)</h2>
+<ul>
+<li>Deployed the gateway (Docker Compose, non-root, read-only rootfs) behind
+Caddy with HTTPS and HSTS on an internal subdomain.</li>
+<li>Moved both provider keys into the vault file; issued one virtual key per
+service with a monthly budget and a model allow-list.</li>
+<li>Services switched by changing <code>base_url</code> and key — no code
+changes, because the gateway speaks the same API dialect.</li>
+<li>Rotated the chat-leaked provider key <em>after</em> cutover; zero client
+changes needed, which is the point of the indirection.</li>
+</ul>
+
+<h2>Phase 2 · Routing policy (week 2)</h2>
+<ul>
+<li>Cheap/fast model class for internal tooling, premium class for the
+customer-facing feature — enforced by key, not by convention.</li>
+<li>Per-key rate limits sized from two weeks of observed traffic.</li>
+<li>Nightly encrypted backups plus an external health probe with
+transition-based alerting.</li>
+</ul>
+
+<h2>Phase 3 · The outage that paid for it</h2>
+<p>Some weeks later, the primary provider had a partial outage — elevated
+errors and latency (the pattern any status page archive will show for every
+major provider). Timeline as the gateway saw it, reproduced in the
+<a href="../demo/">demo</a> with synthetic data:</p>
+<div class="diagram">
+T+0m   upstream A error rate exceeds threshold; health check marks A degraded
+T+0m   router begins retrying failed requests against upstream B (same class)
+T+2m   probe alerts once: "upstream-a: FAIL" — one message, no storm
+T+31m  provider recovers; health check passes twice; A back in rotation
+T+31m  probe alerts once: "upstream-a: RECOVERED"
+Client-visible impact: elevated p95 latency for ~2 minutes; zero 5xx bursts
+</div>
+
+<h2>What made it boring (the goal)</h2>
+<ul>
+<li>Failover was configured and <em>tested with a forced failure drill</em>
+during handover — the incident was the second time it ran, not the first.</li>
+<li>Alert deduplication meant two messages, not two hundred.</li>
+<li>The retrospective was one paragraph, because the audit log already had
+the timeline.</li>
+</ul>
+
+<h2>Handover</h2>
+<p>The team received the runbook, the restore drill recording, and admin
+access. My involvement ended by design; the system did not need me — that is
+the deliverable.</p>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

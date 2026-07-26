@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案例研究：迁移、路由与故障转移 — AI Gateway Lab</title>
+<meta name="description" content="一次匿名化的网关交付：收拢散落的 API 密钥、增加模型路由，并扛过一次上游宕机。">
+<link rel="canonical" href="https://aigatewaylab.xyz/zh/case-study/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/case-study/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/case-study/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/case-study/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="案例研究：迁移、路由与故障转移 — AI Gateway Lab">
+<meta property="og:description" content="一次匿名化的网关交付：收拢散落的 API 密钥、增加模型路由，并扛过一次上游宕机。">
+<meta property="og:url" content="https://aigatewaylab.xyz/zh/case-study/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../static/css/style.css">
+<script src="../../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../../zh/">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../../zh/">首页</a><a class="nl" href="../../zh/architecture/">架构</a><a class="nl" href="../../zh/demo/">在线演示</a><a class="nl" href="../../zh/docs/">部署文档</a><a class="nl" href="../../zh/security/">安全</a><a class="nl active" href="../../zh/case-study/">案例研究</a><a class="nl" href="../../zh/compliance/">合规</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../../case-study/" hreflang="en">EN</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">背景风格</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>案例研究</h1>
+<div class="notice">由真实的自托管网关运维工作匿名化、泛化而来。身份信息、主机名、精确数字与厂商组合均已修改；时间线结构与故障模式才是要传达的经验。下文数字用于说明模式，不是账单记录。</div><h2>起点</h2>
+<p>一个小型产品团队用三个服务对接两家 AI 服务商。每个服务在自己的 env 文件里各存一把服务商密钥；其中一把曾在一次事故中经聊天工具转发过、此后从未轮换。没有按团队的用量视图——账单就是一个总数。</p><h2>阶段 1 · 收拢（第 1 周）</h2>
+<ul>
+<li>在内部子域名上部署网关（Docker Compose、非 root、只读根文件系统），前置
+Caddy，启用 HTTPS 与 HSTS。</li><li>两把服务商密钥全部移入密钥库；每个服务发一把虚拟密钥，带月度预算与模型白名单。</li><li>各服务只改 <code>base_url</code> 和密钥即完成切换——不改代码，因为网关说的是同一种 API 方言。</li><li>在切换<em>之后</em>轮换那把经聊天泄漏的服务商密钥；客户端零改动——这正是加一层间接的意义。</li>
+</ul>
+
+<h2>阶段 2 · 路由策略（第 2 周）</h2>
+<ul>
+<li>内部工具走廉价快速的模型等级，面向客户的功能走高级等级——用密钥强制执行，而不是靠自觉。</li><li>按两周实测流量为每把密钥设定速率上限。</li><li>每夜加密备份，外部健康探针基于状态变化告警。</li>
+</ul>
+
+<h2>阶段 3 · 那次"值回票价"的宕机</h2>
+<p>几周后，主力服务商出现局部故障——错误率与延迟升高（任何一家大服务商的
+status page 存档里都能找到这个模式）。以下是网关视角的时间线，<a href="../demo/">演示</a>里用合成数据复现了它：</p>
+<div class="diagram">
+T+0m   上游 A 错误率超阈值；健康检查将 A 标记为 degraded
+T+0m   路由器开始把失败请求重试到同等级的上游 B
+T+2m   探针告警一次："upstream-a: FAIL"——一条消息，不刷屏
+T+31m  服务商恢复；健康检查连续两次通过；A 重回轮转
+T+31m  探针告警一次："upstream-a: RECOVERED"
+客户可见影响：约 2 分钟的 p95 延迟升高；没有 5xx 爆发
+</div>
+
+<h2>让它变得无聊的原因（这就是目标）</h2>
+<ul>
+<li>故障转移在交接时<em>做过强制故障演练</em>——事故发生时它是第二次运行，不是第一次。</li><li>告警去重意味着两条消息，而不是两百条。</li><li>复盘只写了一段话，因为审计日志里已经有完整时间线。</li>
+</ul>
+
+<h2>交接</h2>
+<p>团队拿到 runbook、恢复演练录屏和管理员权限。我的参与按设计终止；系统不需要我也能运转——这就是交付物。</p>
+
+</main>
+<footer><div class="foot-inner">
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../../zh/security/">安全说明</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../../static/js/theme-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Demo — Mock Gateway Console — AI Gateway Lab</title>
+<meta name="description" content="Read-only demonstration console of a self-hosted AI gateway: synthetic accounts, keys, request logs and a failover replay.">
+<link rel="canonical" href="https://aigatewaylab.xyz/demo/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/demo/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/demo/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/demo/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Live Demo — Mock Gateway Console — AI Gateway Lab">
+<meta property="og:description" content="Read-only demonstration console of a self-hosted AI gateway: synthetic accounts, keys, request logs and a failover replay.">
+<meta property="og:url" content="https://aigatewaylab.xyz/demo/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl" href="../architecture/">Architecture</a><a class="nl active" href="../demo/">Live Demo</a><a class="nl" href="../docs/">Deployment Docs</a><a class="nl" href="../security/">Security</a><a class="nl" href="../case-study/">Case Study</a><a class="nl" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/demo/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Demo Console</h1>
+<div class="notice"><strong>Everything below is synthetic.</strong> The
+upstreams are mocks, the accounts and balances are fake, the request log is
+generated data. No real provider account is connected to this site. State
+resets automatically every 15 minutes. Writes only touch the throwaway
+in-browser copy.</div>
+
+<div class="demo-toolbar">
+  <span class="stat">demo state: <span id="d-age">fresh</span></span>
+  <button class="btn ghost" id="d-reset" type="button">Reset demo state</button>
+  <button class="btn ghost" id="d-replay" type="button">Replay failover incident</button>
+</div>
+
+<h2>Upstream health</h2>
+<div id="d-upstreams" class="grid c3"></div>
+
+<h2>Virtual keys</h2>
+<p class="dim">Create and revoke to see the audit trail update. Keys are
+shown once, then only as a prefix — same policy as production.</p>
+<p><button class="btn" id="d-newkey" type="button">+ Create virtual key</button></p>
+<div class="scroll-x"><table id="d-keys"></table></div>
+
+<h2>Request log (redacted, as in production)</h2>
+<div class="scroll-x"><table id="d-log"></table></div>
+
+<h2>Audit trail</h2>
+<div class="scroll-x"><table id="d-audit"></table></div>
+
+<script src="../static/js/demo.js" defer></script>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

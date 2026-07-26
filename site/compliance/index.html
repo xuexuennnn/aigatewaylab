@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compliance & Boundaries — AI Gateway Lab</title>
+<meta name="description" content="What this practice does and refuses: provider-by-provider compliance matrix for self-hosted AI gateway deployments.">
+<link rel="canonical" href="https://aigatewaylab.xyz/compliance/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/compliance/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/compliance/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/compliance/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Compliance & Boundaries — AI Gateway Lab">
+<meta property="og:description" content="What this practice does and refuses: provider-by-provider compliance matrix for self-hosted AI gateway deployments.">
+<meta property="og:url" content="https://aigatewaylab.xyz/compliance/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../">Home</a><a class="nl" href="../architecture/">Architecture</a><a class="nl" href="../demo/">Live Demo</a><a class="nl" href="../docs/">Deployment Docs</a><a class="nl" href="../security/">Security</a><a class="nl" href="../case-study/">Case Study</a><a class="nl active" href="../compliance/">Compliance</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../zh/compliance/" hreflang="zh-Hans">中文</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">Background style</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>Compliance</h1>
+<p class="lead">Gateways are dual-use. The same routing tech that manages a
+company’s own keys can be misused to resell consumer subscriptions.
+This page states, in writing, which side of the line this practice is on.</p>
+
+<h2>Services provided</h2>
+<ul>
+<li>Deployment and operation of gateways routing traffic under <strong>your
+organisation’s own API keys</strong> (BYOK) obtained from providers’
+official API programs.</li>
+<li>Virtual-key management, quotas, usage metering, routing and failover
+across <em>your</em> accounts.</li>
+<li>Security hardening, monitoring, backup and handover.</li>
+</ul>
+
+<h2>Refused, regardless of payment</h2>
+<ul>
+<li>Converting consumer subscriptions (ChatGPT Plus, Claude Pro/Max, Gemini
+consumer plans, etc.) into resellable API access.</li>
+<li>Account pooling, quota sharing or resale of account capacity.</li>
+<li>Bypassing provider rate limits, concurrency caps or anti-abuse systems.</li>
+<li>Extracting, buying, selling or transferring account credentials.</li>
+<li>Scraping private web UIs to simulate API access.</li>
+</ul>
+
+<h2>Provider matrix (API access modes)</h2>
+<div class="notice">Summarised from provider terms as read on 2026-07-26.
+Terms change; verify against the linked originals before relying on this
+table. This is an engineering compliance summary, not legal advice.</div>
+<table>
+<tr><th>Provider</th><th>Official API (BYOK)</th><th>Consumer-subscription
+relay via gateway</th><th>Notes</th></tr>
+<tr><td>OpenAI</td><td class="ok-cell">Permitted — platform API keys</td>
+<td>Not permitted for third-party resale relay</td><td>Platform terms tie
+API usage to the account holder; consumer ChatGPT terms cover personal,
+non-programmatic use.</td></tr>
+<tr><td>Anthropic</td><td class="ok-cell">Permitted — API keys via console</td>
+<td>Not permitted for third-party resale relay</td><td>Commercial terms
+distinguish API service from consumer Claude apps.</td></tr>
+<tr><td>Google (Gemini)</td><td class="ok-cell">Permitted — AI Studio /
+Vertex keys</td><td>Not permitted for third-party resale relay</td>
+<td>Consumer plans and Cloud API are separate products with separate
+terms.</td></tr>
+<tr><td>Open-weight hosts (Together, Fireworks, self-hosted vLLM…)</td>
+<td class="ok-cell">Permitted — standard API keys or your own hardware</td>
+<td>n/a</td><td>Cleanest path for cost-sensitive routing tiers.</td></tr>
+</table>
+<p class="dim">Any access mode not covered by a provider’s official
+program is treated as UNVERIFIED here: it is not demonstrated on this site,
+not documented as a tutorial, and not enabled in the demo.</p>
+
+<h2>About this site</h2>
+<ul>
+<li>The <a href="../demo/">demo</a> runs against a <strong>mock upstream
+only</strong>: fake accounts, fake balances, fake logs. No real provider
+account is connected anywhere on this host.</li>
+<li>This site is an independent deployment demonstration. It is not
+affiliated with, endorsed by, or connected to the Sub2API project or any
+upstream AI provider. Provider names appear for interoperability description
+only; no logos are used.</li>
+<li>Open-source gateway software licences are honoured in deployments —
+including source availability and modification notices for
+LGPL-3.0-or-later components. Licence texts ship with every delivery.</li>
+</ul>
+
+</main>
+<footer><div class="foot-inner">
+  <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
+  <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
+  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>合规与边界 — AI Gateway Lab</title>
+<meta name="description" content="本工作室做什么、拒绝什么：自托管 AI 网关部署的分服务商合规矩阵。">
+<link rel="canonical" href="https://aigatewaylab.xyz/zh/compliance/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/compliance/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/compliance/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/compliance/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="合规与边界 — AI Gateway Lab">
+<meta property="og:description" content="本工作室做什么、拒绝什么：自托管 AI 网关部署的分服务商合规矩阵。">
+<meta property="og:url" content="https://aigatewaylab.xyz/zh/compliance/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../static/css/style.css">
+<script src="../../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../../zh/">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../../zh/">首页</a><a class="nl" href="../../zh/architecture/">架构</a><a class="nl" href="../../zh/demo/">在线演示</a><a class="nl" href="../../zh/docs/">部署文档</a><a class="nl" href="../../zh/security/">安全</a><a class="nl" href="../../zh/case-study/">案例研究</a><a class="nl active" href="../../zh/compliance/">合规</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../../compliance/" hreflang="en">EN</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">背景风格</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>合规</h1>
+<p class="lead">网关技术是双刃的。管理企业自有密钥的路由技术，同样可能被滥用于转售消费级订阅。本页白纸黑字写明：本工作室站在线的哪一边。</p><h2>提供的服务</h2>
+<ul>
+<li>部署与运维只路由<strong>你的组织自有 API 密钥</strong>（BYOK，来自服务商官方 API 计划）流量的网关。</li><li>在<em>你的</em>账号范围内做虚拟密钥管理、配额、用量计量、路由与故障转移。</li><li>安全加固、监控、备份与交接。</li>
+</ul>
+
+<h2>无论报酬多少都拒绝</h2>
+<ul>
+<li>把消费级订阅（ChatGPT Plus、Claude Pro/Max、Gemini 消费版等）转成可转售的 API 接入。</li><li>账号拼池、配额共享或账号容量转售。</li><li>绕过服务商的速率限制、并发上限或反滥用系统。</li><li>提取、买卖或转移账号凭证。</li><li>抓取私有 Web 界面来模拟 API 访问。</li>
+</ul>
+
+<h2>服务商矩阵（API 接入方式）</h2>
+<div class="notice">摘要基于 2026-07-26 阅读的服务商条款。条款会变化；在依赖本表前请核对原文链接。这是工程合规摘要，不构成法律意见。</div>
+<table>
+<tr><th>服务商</th><th>官方 API（BYOK）</th><th>经网关中继消费级订阅</th><th>备注</th></tr>
+<tr><td>OpenAI</td><td class="ok-cell">允许——平台 API 密钥</td><td>不允许用于第三方转售中继</td><td>平台条款将 API 用量绑定到账号持有者；消费级 ChatGPT 条款只覆盖个人、非程序化使用。</td></tr>
+<tr><td>Anthropic</td><td class="ok-cell">允许——控制台签发的 API 密钥</td><td>不允许用于第三方转售中继</td><td>商业条款把 API 服务与消费级 Claude 应用区分开。</td></tr>
+<tr><td>Google (Gemini)</td><td class="ok-cell">允许——AI Studio / Vertex
+密钥</td><td>不允许用于第三方转售中继</td><td>消费级套餐与 Cloud API 是条款各自独立的两种产品。</td></tr><tr><td>开放权重托管（Together、Fireworks、自托管 vLLM…）</td><td class="ok-cell">允许——标准 API 密钥或你自己的硬件</td>
+<td>n/a</td><td>对成本敏感的路由分层来说是最干净的路径。</td></tr>
+</table>
+<p class="dim">凡是不在服务商官方计划覆盖内的接入方式，这里一律按「未验证」处理：本站不演示、不写成教程、也不会在 demo 中启用。</p><h2>关于本站</h2>
+<ul>
+<li><a href="../demo/">演示</a>只连接<strong>模拟上游</strong>：假账号、假余额、假日志。这台主机上没有连接任何真实的服务商账号。</li><li>本站是独立的部署演示，与 Sub2API 项目及任何上游 AI 服务商均无隶属、背书或合作关系。服务商名称仅用于描述互操作性；未使用任何 Logo。</li><li>部署中遵守开源网关软件的许可证——包括 LGPL-3.0-or-later 组件的源码可得性与修改声明义务。每次交付都附许可证文本。</li>
+</ul>
+
+</main>
+<footer><div class="foot-inner">
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../../zh/security/">安全说明</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../../static/js/theme-ui.js"></script>
+</body>
+</html>

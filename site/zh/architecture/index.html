@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>网关架构 — AI Gateway Lab</title>
+<meta name="description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域。">
+<link rel="canonical" href="https://aigatewaylab.xyz/zh/architecture/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/architecture/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/architecture/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/architecture/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="网关架构 — AI Gateway Lab">
+<meta property="og:description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域。">
+<meta property="og:url" content="https://aigatewaylab.xyz/zh/architecture/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../static/css/style.css">
+<script src="../../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../../zh/">AI<span>Gateway</span>Lab</a>
+  <a class="nl" href="../../zh/">首页</a><a class="nl active" href="../../zh/architecture/">架构</a><a class="nl" href="../../zh/demo/">在线演示</a><a class="nl" href="../../zh/docs/">部署文档</a><a class="nl" href="../../zh/security/">安全</a><a class="nl" href="../../zh/case-study/">案例研究</a><a class="nl" href="../../zh/compliance/">合规</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../../architecture/" hreflang="en">EN</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">背景风格</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<h1>架构</h1>
+<p class="lead">这是我部署时采用的参考布局——更重要的是，信任边界画在哪里。</p><h2>数据流</h2>
+<div class="diagram">
+ 客户端（你的业务服务、内部工具）
+   │  虚拟密钥 (vk-...)，永远不是服务商密钥
+   ▼
+┌───────────────────────────────────────────────┐
+│  反向代理  (Caddy / nginx)                    │  TLS、HSTS、限流、
+│  - 终结 HTTPS                                 │  安全响应头
+└───────────────┬───────────────────────────────┘
+                ▼
+┌───────────────────────────────────────────────┐
+│  网关  (LiteLLM / one-api 一类)               │
+│  - 认证：虚拟密钥 → 团队、配额、模型          │
+│  - 路由：模型名 → 上游池                      │
+│  - 用量计量、请求日志（已脱敏）               │
+│  - 故障转移：重试下一个健康上游               │
+└──────┬──────────────────────────┬─────────────┘
+       ▼                          ▼
+┌──────────────┐          ┌──────────────┐
+│ 密钥保管     │          │ SQLite/Postgres│
+│ (env/文件,   │          │ 用量、密钥、   │
+│  0600, 不可  │          │ 审计日志       │
+│  经 web 访问)│          └──────────────┘
+└──────┬───────┘
+       ▼  服务商密钥 (sk-...，归你所有)
+ 上游服务商（OpenAI、Anthropic、Google 等官方 API）
+</div>
+
+<h2>信任边界</h2>
+<table>
+<tr><th>边界</th><th>规则</th></tr><tr><td>公网 → 代理</td><td>只暴露 443。管理界面不在公网接口上——只能经
+SSH 隧道或 VPN 访问。</td></tr><tr><td>代理 → 网关</td><td>回环或内网。网关容器永远不绑定公网端口。</td></tr><tr><td>网关 → 密钥库</td><td>服务商密钥只有网关进程用户可读（0600、非
+root）。它们不会出现在日志、报错信息或客户端响应里。</td></tr><tr><td>客户端 → 网关</td><td>客户端持有的是带配额、可吊销的虚拟密钥。某个客户端被攻破，烧掉的是一把虚拟密钥，而不是服务商账号。</td></tr>
+</table>
+
+<h2>故障域</h2>
+<ul>
+<li><strong>上游宕机：</strong>健康检查把该上游标记为不健康；路由器把请求重试到同一模型等级的下一个服务商。<a href="../case-study/">案例研究</a>里有一条真实结构的故障转移时间线（数据为合成）。</li><li><strong>网关崩溃：</strong>systemd/compose 重启策略，外加外部健康探针（形态类似我的
+<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
+项目），在状态变化时各告警一次。</li><li><strong>主机丢失：</strong>数据库与配置每夜加密备份；恢复演练写入文档并实际排练——恢复耗时取决于镜像拉取与 DNS，在交接时按环境实测，而非估算。</li>
+</ul>
+
+</main>
+<footer><div class="foot-inner">
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../../zh/security/">安全说明</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../../static/js/theme-ui.js"></script>
+</body>
+</html>

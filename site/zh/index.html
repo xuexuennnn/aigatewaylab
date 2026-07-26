@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自托管 AI API 网关：部署与运维 — AI Gateway Lab</title>
+<meta name="description" content="自托管 AI API 网关的部署、加固与运维：Docker、HTTPS、密钥管理、监控、备份与故障转移。独立演示站。">
+<link rel="canonical" href="https://aigatewaylab.xyz/zh/">
+<link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/">
+<link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/">
+<link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="自托管 AI API 网关：部署与运维 — AI Gateway Lab">
+<meta property="og:description" content="自托管 AI API 网关的部署、加固与运维：Docker、HTTPS、密钥管理、监控、备份与故障转移。独立演示站。">
+<meta property="og:url" content="https://aigatewaylab.xyz/zh/">
+<meta property="og:site_name" content="AI Gateway Lab">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../static/css/style.css">
+<script src="../static/js/theme.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128273;</text></svg>">
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<nav><div class="nav-inner">
+  <a class="brand" href="../zh/">AI<span>Gateway</span>Lab</a>
+  <a class="nl active" href="../zh/">首页</a><a class="nl" href="../zh/architecture/">架构</a><a class="nl" href="../zh/demo/">在线演示</a><a class="nl" href="../zh/docs/">部署文档</a><a class="nl" href="../zh/security/">安全</a><a class="nl" href="../zh/case-study/">案例研究</a><a class="nl" href="../zh/compliance/">合规</a>
+  <div class="theme-cluster">
+    <a class="nl lang" href="../" hreflang="en">EN</a>
+    <button id="theme-mode" class="theme-btn" type="button" aria-label="Theme: system. Activate to switch.">&#9681; system</button>
+    <label class="visually-hidden" for="theme-surface">背景风格</label>
+    <span class="sel-wrap"><select id="theme-surface" class="theme-sel">
+      <option value="frost">frost</option>
+      <option value="graphite">graphite</option>
+      <option value="midnight">midnight</option>
+    </select></span>
+  </div>
+</div></nav>
+<main id="main">
+
+<div class="hero">
+<div>
+<p class="kicker">部署 &middot; 加固 &middot; 运维</p><h1>自托管 AI API 网关<br>部署与运维</h1>
+<p class="lead">我为需要统一管控 LLM 流量入口的团队部署、加固并运维自托管
+AI API 网关——密钥是你的，日志是你的，基础设施也是你的。</p>
+<p class="cta-row">
+  <a class="btn" href="mailto:hello@aigatewaylab.xyz">联系我</a><a class="btn ghost btn-gap" href="demo/">查看在线演示</a>
+</p>
+</div>
+<div class="hero-console" aria-label="部署流程示意（静态示例）">
+  <div class="hc-bar"><span class="hc-dot"></span><span class="hc-dot"></span><span class="hc-dot"></span>部署 &middot; 验证 &middot; 交接</div>
+<pre><code><span class="hc-c"># 每次交付以证据收尾，而不是口头承诺</span>
+<span class="hc-k">$</span> deployctl preflight --remote gateway-host
+<span class="hc-o">ok</span>  80/443 空闲 &middot; docker 27.x &middot; 磁盘余 4GB
+<span class="hc-k">$</span> deployctl apply --plan plan.json
+<span class="hc-o">ok</span>  容器 healthy &middot; 仅绑定 127.0.0.1
+<span class="hc-k">$</span> deployctl verify --target gateway-host
+<span class="hc-o">ok</span>  TLS A &middot; HSTS &middot; 安全头 6/6 &middot; 日志已脱敏
+<span class="hc-c"># 交接物：运维手册 + 备份 + 属于你的密钥</span></code></pre>
+</div>
+</div>
+
+<h2>问题在哪</h2>
+<div class="grid c3">
+  <div class="card glass"><h3>密钥散落各处</h3><p class="dim">服务商 API 密钥被贴进 notebook、CI 变量和桌面应用。没人说得清哪把密钥在哪里被使用，轮换一把要付出什么代价。</p></div><div class="card glass"><h3>成本不可见</h3><p class="dim">账单月底才来。是哪个团队、哪个功能、哪个失控脚本花掉了预算？服务商的控制台答不上来。
+  </p></div>
+  <div class="card glass"><h3>代码层面的厂商锁定</h3><p class="dim">
+  每个服务都硬编码一家厂商的 SDK。想换模型——或者想扛过一次宕机——都得改代码、重新发布。</p></div>
+</div>
+
+<h2>网关解决什么</h2>
+<p>自托管网关（如 LiteLLM、one-api 或 Sub2API 一类的开源项目）在你所有上游之前提供一个 OpenAI 兼容端点。业务服务拿到的是可创建、可限额、可吊销的<em>虚拟密钥</em>；上游密钥集中保管在一处。你获得按密钥计量的用量、速率限制、模型路由与故障转移——全部跑在你自己的服务器上。</p><h2>我交付什么</h2>
+<div class="grid c2">
+  <div class="card"><h3>部署</h3><p class="dim">Docker Compose 或 systemd 部署，反向代理带 HTTPS 与 HSTS，非 root 容器，目录结构成文档，升级路径经过实测而不是拍脑袋。</p></div><div class="card"><h3>加固</h3><p class="dim">密钥入库并收紧权限，管理面与数据面分离，安全响应头、fail2ban、日志脱敏——密钥永远不会以明文落进日志。
+  </p></div>
+  <div class="card"><h3>运维</h3><p class="dim">健康检查与告警、用量看板、备份与恢复演练（附成文 runbook）、按团队与按密钥的配额策略。</p></div><div class="card"><h3>交接</h3><p class="dim">最终一切归你：基础设施、文档和一段录屏讲解。系统的运转不依赖我——这正是交付目标。</p></div>
+</div>
+
+<h2>服务边界，事先说明</h2>
+<div class="notice">我部署的网关只路由<strong>你自己的服务商账号与 API 密钥</strong>（或你的组织获得授权使用的密钥）下的流量。我不构建、不运维以下系统：把消费级订阅转售为 API、共享或拼池账号配额、绕过服务商速率限制、提取账号凭证。完整清单见<a href="compliance/">合规页</a>。</div>
+
+</main>
+<footer><div class="foot-inner">
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../zh/security/">安全说明</a></p>
+  <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
+</div></footer>
+<script src="../static/js/theme-ui.js"></script>
+</body>
+</html>
