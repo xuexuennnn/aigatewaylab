@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>安全模型 — AI Gateway Lab</title>
-<meta name="description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故恢复。">
+<meta name="description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故处置方案。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/security/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/security/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/security/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/security/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="安全模型 — AI Gateway Lab">
-<meta property="og:description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故恢复。">
+<meta property="og:description" content="自托管 AI API 网关的密钥保管、最小权限、日志脱敏与事故处置方案。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/security/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -38,27 +38,26 @@
 <main id="main">
 
 <h1>安全</h1>
-<p class="lead">网关运维里那些在顺风演示里看不见、在事故中起决定作用的部分。</p><h2>密钥保管</h2>
+<p class="lead">网关运维中真正见功力的部分，往往在演示顺利时看不见，在事故发生时起决定作用。</p><h2>密钥保管</h2>
 <table>
-<tr><th>秘密</th><th>放在哪里</th><th>绝不允许出现在哪里</th></tr><tr><td>服务商密钥 (sk-…)</td><td>宿主机上 0600 的 env 文件，或密钥管理服务；仅网关进程用户可读</td><td>日志、报错正文、客户端响应、git、容器镜像、明文备份</td></tr><tr><td>虚拟密钥 (vk-…)</td><td>在网关数据库中散列存储</td><td>创建之后的任何完整展示——UI 只做一次性展示，日志只记前缀</td></tr><tr><td>管理员凭证</td><td>密码管理器；开启 TOTP</td>
-<td>共享聊天、仓库里的 .env 文件</td></tr>
+<tr><th>秘密</th><th>存放位置</th><th>绝不允许出现的位置</th></tr><tr><td>服务商密钥 (sk-…)</td><td>宿主机上权限 0600 的 env 文件，或密钥管理服务；仅网关进程用户可读</td><td>日志、报错正文、客户端响应、git、容器镜像、明文备份</td></tr><tr><td>虚拟密钥 (vk-…)</td><td>网关数据库中散列存储</td><td>创建之后的任何完整展示——界面只显示一次，日志只记前缀</td></tr><tr><td>管理员凭证</td><td>密码管理器，并开启 TOTP</td>
+<td>群聊消息、仓库里的 .env 文件</td></tr>
 </table>
 
 <h2>最小权限</h2>
 <ul>
-<li>容器以专用非 root UID 运行，根文件系统只读，临时空间走 tmpfs。</li><li>管理面绑定 localhost；访问它需要 SSH 隧道或 VPN 成员资格。公网接口只承载推理流量。</li><li>数据库用户运行期没有 DDL 权限；迁移作为独立步骤执行。</li><li>每个客户团队有自己的虚拟密钥，带模型白名单与预算——吊销一个客户绝不波及另一个。</li>
+<li>容器以专用非 root UID 运行，根文件系统只读，临时文件走 tmpfs。</li><li>管理面只绑定 localhost，访问必须经 SSH 隧道或 VPN。公网接口只承载推理流量。</li><li>数据库账号在运行期不持有 DDL 权限，迁移作为独立步骤单独执行。</li><li>每个客户团队使用独立的虚拟密钥，各自带模型白名单与预算上限——吊销任何一个客户，都不会波及其他客户。</li>
 </ul>
 
 <h2>日志脱敏</h2>
-<p>网关位于请求路径上，它的日志天然是个蜜罐。部署时做了如下脱敏：</p>
+<p>网关处在请求链路的正中间，它的日志天然就是高价值目标。部署时默认做以下脱敏处理：</p>
 <ul>
 <li><code>Authorization</code> 头 → <code>vk-****后4位</code></li>
-<li>提示词与补全正文 → 默认只记录 token 数；除非客户为调试显式开启内容日志，且带 TTL</li>
-<li>上游报错正文 → 服务商密钥在错误到达客户端或日志之前被剥离</li>
+<li>提示词与补全正文 → 默认只记录 token 数；仅当客户为排障显式开启内容日志时才记录，且设定自动过期。</li><li>上游报错正文 → 服务商密钥在错误信息到达客户端或日志之前即被剥离。</li>
 </ul>
-<p><a href="../demo/">演示</a>里的请求日志展示的正是这个形态：足够运维，不值得偷。</p><h2>恢复流程（排练过的，不是纸上谈兵）</h2>
+<p><a href="../demo/">演示</a>中的请求日志展示的正是这套形态：满足运维需要，但没有窃取价值。</p><h2>事故处置（演练过的流程，不是纸面预案）</h2>
 <table>
-<tr><th>事故</th><th>响应</th></tr><tr><td>虚拟密钥泄漏</td><td>吊销该密钥（请求 fail-closed），复查其使用窗口的审计日志，按同样策略补发新钥。爆炸半径：这把密钥的配额。</td></tr><tr><td>疑似服务商密钥泄漏</td><td>在服务商侧轮换，更新密钥库条目，重启网关（重试代理挡住的几秒停机），用金丝雀请求确认。</td></tr><tr><td>疑似主机沦陷</td><td>冻结：先在服务商侧吊销服务商密钥——那才是王冠。用干净镜像加加密备份重建；绝不从沦陷主机恢复可执行文件。</td></tr><tr><td>数据丢失</td><td>恢复昨夜加密转储；转储之后的用量记录确认丢失并如实承认——账务以服务商控制台对账。</td></tr>
+<tr><th>事故</th><th>处置</th></tr><tr><td>虚拟密钥泄露</td><td>立即吊销（请求直接失败关闭），复查其活跃窗口内的审计日志，按原有策略补发新钥。影响范围：仅这把密钥的配额。</td></tr><tr><td>疑似服务商密钥泄露</td><td>在服务商侧轮换，更新密钥库，重启网关（重试代理可以吃掉这几秒钟的中断），最后用金丝雀请求确认恢复。</td></tr><tr><td>疑似主机沦陷</td><td>第一时间在服务商侧吊销服务商密钥——那才是真正值钱的东西。之后用干净镜像加加密备份重建，绝不从可疑主机上恢复任何可执行文件。</td></tr><tr><td>数据丢失</td><td>恢复前一夜的加密备份；备份点之后的用量记录确认丢失就如实说明，账务以服务商控制台为准进行对账。</td></tr>
 </table>
 
 </main>

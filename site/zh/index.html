@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>自托管 AI API 网关：部署与运维 — AI Gateway Lab</title>
-<meta name="description" content="自托管 AI API 网关的部署、加固与运维：Docker、HTTPS、密钥管理、监控、备份与故障转移。独立演示站。">
+<meta name="description" content="面向团队的自托管 AI API 网关部署、加固与运维服务：Docker、HTTPS、密钥治理、监控告警、备份恢复与故障转移。独立演示站。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="自托管 AI API 网关：部署与运维 — AI Gateway Lab">
-<meta property="og:description" content="自托管 AI API 网关的部署、加固与运维：Docker、HTTPS、密钥管理、监控、备份与故障转移。独立演示站。">
+<meta property="og:description" content="面向团队的自托管 AI API 网关部署、加固与运维服务：Docker、HTTPS、密钥治理、监控告警、备份恢复与故障转移。独立演示站。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -40,43 +40,38 @@
 <div class="hero">
 <div>
 <p class="kicker">部署 &middot; 加固 &middot; 运维</p><h1>自托管 AI API 网关<br>部署与运维</h1>
-<p class="lead">我为需要统一管控 LLM 流量入口的团队部署、加固并运维自托管
-AI API 网关——密钥是你的，日志是你的，基础设施也是你的。</p>
+<p class="lead">为需要统一管理 LLM 流量入口的团队提供网关部署、安全加固与长期运维支持。密钥、日志、基础设施，全部掌握在你自己手里。</p>
 <p class="cta-row">
   <a class="btn" href="mailto:hello@aigatewaylab.xyz">联系我</a><a class="btn ghost btn-gap" href="demo/">查看在线演示</a>
 </p>
 </div>
 <div class="hero-console" aria-label="部署流程示意（静态示例）">
   <div class="hc-bar"><span class="hc-dot"></span><span class="hc-dot"></span><span class="hc-dot"></span>部署 &middot; 验证 &middot; 交接</div>
-<pre><code><span class="hc-c"># 每次交付以证据收尾，而不是口头承诺</span>
+<pre><code><span class="hc-c"># 每一次交付，都以验证数据收尾</span>
 <span class="hc-k">$</span> deployctl preflight --remote gateway-host
 <span class="hc-o">ok</span>  80/443 空闲 &middot; docker 27.x &middot; 磁盘余 4GB
 <span class="hc-k">$</span> deployctl apply --plan plan.json
 <span class="hc-o">ok</span>  容器 healthy &middot; 仅绑定 127.0.0.1
 <span class="hc-k">$</span> deployctl verify --target gateway-host
 <span class="hc-o">ok</span>  TLS A &middot; HSTS &middot; 安全头 6/6 &middot; 日志已脱敏
-<span class="hc-c"># 交接物：运维手册 + 备份 + 属于你的密钥</span></code></pre>
+<span class="hc-c"># 交接内容：运维手册 + 备份方案 + 完全属于你的密钥</span></code></pre>
 </div>
 </div>
 
-<h2>问题在哪</h2>
+<h2>团队常见的三个问题</h2>
 <div class="grid c3">
-  <div class="card glass"><h3>密钥散落各处</h3><p class="dim">服务商 API 密钥被贴进 notebook、CI 变量和桌面应用。没人说得清哪把密钥在哪里被使用，轮换一把要付出什么代价。</p></div><div class="card glass"><h3>成本不可见</h3><p class="dim">账单月底才来。是哪个团队、哪个功能、哪个失控脚本花掉了预算？服务商的控制台答不上来。
-  </p></div>
-  <div class="card glass"><h3>代码层面的厂商锁定</h3><p class="dim">
-  每个服务都硬编码一家厂商的 SDK。想换模型——或者想扛过一次宕机——都得改代码、重新发布。</p></div>
+  <div class="card glass"><h3>密钥散落各处</h3><p class="dim">API 密钥被随手贴进笔记、CI 变量和各种桌面工具，没有人能说清一共发出去多少把、各自用在哪里，更没有人敢轮换。</p></div><div class="card glass"><h3>成本一笔糊涂账</h3><p class="dim">账单月底才出，具体是哪个团队、哪个功能、哪个失控的脚本烧掉了预算，服务商控制台给不出答案。</p></div><div class="card glass"><h3>代码被厂商绑死</h3><p class="dim">每个服务各自硬编码一家厂商的 SDK，想换模型、想在故障时切换备用线路，都要改代码、重新上线。</p></div>
 </div>
 
-<h2>网关解决什么</h2>
-<p>自托管网关（如 LiteLLM、one-api 或 Sub2API 一类的开源项目）在你所有上游之前提供一个 OpenAI 兼容端点。业务服务拿到的是可创建、可限额、可吊销的<em>虚拟密钥</em>；上游密钥集中保管在一处。你获得按密钥计量的用量、速率限制、模型路由与故障转移——全部跑在你自己的服务器上。</p><h2>我交付什么</h2>
+<h2>网关层能带来什么</h2>
+<p>自托管网关（LiteLLM、one-api、Sub2API 等开源项目）在所有上游服务商之前统一提供一个 OpenAI 兼容接口。业务侧使用的是可随时创建、限额、吊销的<em>虚拟密钥</em>，真正的服务商密钥集中存放、严格管控。用量按密钥计量，速率限制、模型路由、故障转移一应俱全——而这一切都运行在你自己的服务器上。</p><h2>服务内容</h2>
 <div class="grid c2">
-  <div class="card"><h3>部署</h3><p class="dim">Docker Compose 或 systemd 部署，反向代理带 HTTPS 与 HSTS，非 root 容器，目录结构成文档，升级路径经过实测而不是拍脑袋。</p></div><div class="card"><h3>加固</h3><p class="dim">密钥入库并收紧权限，管理面与数据面分离，安全响应头、fail2ban、日志脱敏——密钥永远不会以明文落进日志。
-  </p></div>
-  <div class="card"><h3>运维</h3><p class="dim">健康检查与告警、用量看板、备份与恢复演练（附成文 runbook）、按团队与按密钥的配额策略。</p></div><div class="card"><h3>交接</h3><p class="dim">最终一切归你：基础设施、文档和一段录屏讲解。系统的运转不依赖我——这正是交付目标。</p></div>
+  <div class="card"><h3>部署</h3><p class="dim">Docker Compose 或 systemd 方案，反向代理配齐 HTTPS 与 HSTS，容器以非 root 运行，目录结构有文档可查，升级路径经过实际演练。</p></div><div class="card"><h3>加固</h3><p class="dim">密钥统一入库并收紧权限，管理面与数据面隔离，安全响应头、fail2ban、日志脱敏——任何情况下密钥都不会以明文出现在日志里。</p></div><div class="card"><h3>运维</h3><p class="dim">健康检查与告警、用量看板、定期备份与恢复演练（附书面 runbook），以及按团队、按密钥的配额策略。</p></div><div class="card"><h3>交接</h3><p class="dim">项目结束时，基础设施、文档与讲解录屏全部移交。系统的正常运转不依赖任何外部个人——这本身就是交付标准之一。</p></div>
 </div>
 
-<h2>服务边界，事先说明</h2>
-<div class="notice">我部署的网关只路由<strong>你自己的服务商账号与 API 密钥</strong>（或你的组织获得授权使用的密钥）下的流量。我不构建、不运维以下系统：把消费级订阅转售为 API、共享或拼池账号配额、绕过服务商速率限制、提取账号凭证。完整清单见<a href="compliance/">合规页</a>。</div>
+<h2>服务边界</h2>
+<div class="notice">本工作室部署的网关，只承载<strong>你自己的服务商账号与
+API 密钥</strong>（或你的组织获得正式授权使用的密钥）产生的流量。以下业务一概不做：将消费级订阅转售为 API、共享或拼池账号配额、绕过服务商速率限制、提取账号凭证。完整清单见<a href="compliance/">合规页</a>。</div>
 
 </main>
 <footer><div class="foot-inner">

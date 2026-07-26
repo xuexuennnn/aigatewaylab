@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>网关架构 — AI Gateway Lab</title>
-<meta name="description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域。">
+<meta name="description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域设计。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/architecture/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/architecture/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/architecture/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/architecture/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="网关架构 — AI Gateway Lab">
-<meta property="og:description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域。">
+<meta property="og:description" content="自托管 AI API 网关参考架构：信任边界、数据流、密钥保管与故障域设计。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/architecture/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -38,7 +38,7 @@
 <main id="main">
 
 <h1>架构</h1>
-<p class="lead">这是我部署时采用的参考布局——更重要的是，信任边界画在哪里。</p><h2>数据流</h2>
+<p class="lead">下面是实际部署采用的参考架构。比组件本身更重要的，是信任边界划在哪里。</p><h2>数据流</h2>
 <div class="diagram">
  客户端（你的业务服务、内部工具）
    │  虚拟密钥 (vk-...)，永远不是服务商密钥
@@ -49,11 +49,11 @@
 └───────────────┬───────────────────────────────┘
                 ▼
 ┌───────────────────────────────────────────────┐
-│  网关  (LiteLLM / one-api 一类)               │
+│  网关  (LiteLLM / one-api 等)                 │
 │  - 认证：虚拟密钥 → 团队、配额、模型          │
 │  - 路由：模型名 → 上游池                      │
 │  - 用量计量、请求日志（已脱敏）               │
-│  - 故障转移：重试下一个健康上游               │
+│  - 故障转移：自动重试下一个健康上游           │
 └──────┬──────────────────────────┬─────────────┘
        ▼                          ▼
 ┌──────────────┐          ┌──────────────┐
@@ -68,16 +68,16 @@
 
 <h2>信任边界</h2>
 <table>
-<tr><th>边界</th><th>规则</th></tr><tr><td>公网 → 代理</td><td>只暴露 443。管理界面不在公网接口上——只能经
-SSH 隧道或 VPN 访问。</td></tr><tr><td>代理 → 网关</td><td>回环或内网。网关容器永远不绑定公网端口。</td></tr><tr><td>网关 → 密钥库</td><td>服务商密钥只有网关进程用户可读（0600、非
-root）。它们不会出现在日志、报错信息或客户端响应里。</td></tr><tr><td>客户端 → 网关</td><td>客户端持有的是带配额、可吊销的虚拟密钥。某个客户端被攻破，烧掉的是一把虚拟密钥，而不是服务商账号。</td></tr>
+<tr><th>边界</th><th>规则</th></tr><tr><td>公网 → 代理</td><td>对外只开放 443。管理后台绝不暴露在公网，只能通过
+SSH 隧道或 VPN 访问。</td></tr><tr><td>代理 → 网关</td><td>走回环或内网。网关容器任何时候都不绑定公网端口。</td></tr><tr><td>网关 → 密钥库</td><td>服务商密钥仅网关进程用户可读（0600、非
+root），不会出现在日志、报错信息或返回给客户端的任何内容里。</td></tr><tr><td>客户端 → 网关</td><td>客户端只持有带配额、可吊销的虚拟密钥。即便某个客户端被攻破，损失也只是一把虚拟密钥的额度，动不到服务商账号。</td></tr>
 </table>
 
 <h2>故障域</h2>
 <ul>
-<li><strong>上游宕机：</strong>健康检查把该上游标记为不健康；路由器把请求重试到同一模型等级的下一个服务商。<a href="../case-study/">案例研究</a>里有一条真实结构的故障转移时间线（数据为合成）。</li><li><strong>网关崩溃：</strong>systemd/compose 重启策略，外加外部健康探针（形态类似我的
+<li><strong>上游服务商故障：</strong>健康检查将其标记为不健康，路由器把请求自动重试到同一档位的其他服务商。<a href="../case-study/">案例复盘</a>中有一条结构真实的故障转移时间线（数据为合成）。</li><li><strong>网关进程崩溃：</strong>systemd/compose 自动重启，外部健康探针在状态变化时各告警一次（形态类似
 <a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
-项目），在状态变化时各告警一次。</li><li><strong>主机丢失：</strong>数据库与配置每夜加密备份；恢复演练写入文档并实际排练——恢复耗时取决于镜像拉取与 DNS，在交接时按环境实测，而非估算。</li>
+项目）。</li><li><strong>主机整体丢失：</strong>数据库与配置每夜加密备份；恢复流程写成文档并实际演练过。恢复耗时取决于镜像拉取与 DNS 生效速度，交接时按实际环境测出，不做空头估算。</li>
 </ul>
 
 </main>

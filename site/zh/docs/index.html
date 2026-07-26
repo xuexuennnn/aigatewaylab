@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>部署文档 — AI Gateway Lab</title>
-<meta name="description" content="按步骤展开：自托管 AI API 网关的 Docker 部署、HTTPS、备份、升级与监控。">
+<meta name="description" content="自托管 AI API 网关的完整部署流程：Docker、HTTPS、备份、升级与监控，逐步展开。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/docs/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/docs/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/docs/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/docs/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="部署文档 — AI Gateway Lab">
-<meta property="og:description" content="按步骤展开：自托管 AI API 网关的 Docker 部署、HTTPS、备份、升级与监控。">
+<meta property="og:description" content="自托管 AI API 网关的完整部署流程：Docker、HTTPS、备份、升级与监控，逐步展开。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/docs/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -38,7 +38,7 @@
 <main id="main">
 
 <h1>部署文档</h1>
-<p class="lead">这是每位客户拿到的 runbook 的公开精简版。命令真实、且在演示所用的开源网关栈上测试过；主机名与路径为示例。</p>
+<p class="lead">这是交付给每位客户的 runbook 公开精简版。所有命令都在演示所用的开源网关栈上实际验证过；主机名与路径为示例值。</p>
 
 <h2>1 · Docker 部署</h2>
 <pre><code># docker-compose.yml（节选——完整文件见 GitHub 仓库）
@@ -55,11 +55,12 @@ services:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/health/liveliness"]
       interval: 30s
       retries: 3</code></pre>
-<p>原则：网关容器从不发布宿主机端口，只有反向代理发布。密钥放在 root 所有、
-0600 权限的 env 文件里，以只读方式挂载。容器以固定的非 root UID 运行，根文件系统只读。</p>
+<p>基本原则：网关容器不直接发布宿主机端口，对外的永远只有反向代理。密钥放在
+root 所有、权限 0600 的 env 文件中，以只读方式挂载。容器使用固定的非 root
+UID，根文件系统只读。</p>
 
-<h2>2 · HTTPS 与自动续期</h2>
-<pre><code># Caddyfile —— 8 行搞定 HTTPS、HSTS 和安全头
+<h2>2 · HTTPS 与证书自动续期</h2>
+<pre><code># Caddyfile —— 8 行配齐 HTTPS、HSTS 与安全头
 example.com {{
   encode gzip
   header {{
@@ -70,24 +71,24 @@ example.com {{
   }}
   reverse_proxy 127.0.0.1:4000
 }}</code></pre>
-<p>Caddy 自动签发并续期证书。用 nginx 的话由 certbot 加 systemd 定时器完成同样的事；两种变体仓库里都有。</p>
+<p>Caddy 自动签发并续期证书。如果选 nginx，则由 certbot 配合 systemd 定时器完成同样的工作，两套方案仓库里都有现成配置。</p>
 
-<h2>3 · 恢复得出来的备份才是备份</h2>
-<pre><code># 每夜：导出 DB + 配置，加密，保留 14 天
+<h2>3 · 备份：能恢复的才算数</h2>
+<pre><code># 每夜执行：导出数据库与配置，加密归档，保留 14 天
 sqlite3 /srv/gateway/data/gateway.db ".backup /tmp/gw.db"
 tar czf - -C /srv/gateway config data | age -r "$BACKUP_PUBKEY" \
   &gt; /backup/gateway-$(date +%F).tar.gz.age
 find /backup -name "gateway-*.age" -mtime +14 -delete</code></pre>
-<p>没有恢复过的备份不算备份。runbook 里包含季度恢复演练：恢复到临时目录，在私有端口拉起第二个网关实例，跑冒烟测试，然后拆除。</p>
+<p>从未做过恢复演练的备份，只是一份心理安慰。runbook 中固定了季度恢复演练：恢复到临时目录，在内部端口拉起第二个网关实例，跑一轮冒烟测试，确认无误后拆除。</p>
 
-<h2>4 · 升级不出意外</h2>
+<h2>4 · 升级流程</h2>
 <ol>
-<li>读 release notes；确认是否有 schema 迁移。</li><li>快照：按上面的方式备份，记录当前镜像 digest。</li><li>拉新镜像、重启，盯健康端点和错误率。</li><li>回归：跑冒烟套件（建密钥 → 发一次对话请求 → 出现用量记录）。</li><li>回滚路径：上一个镜像 digest + 恢复的 DB——排练过，所以时间线是每套环境实测得出的，不是猜的。</li>
+<li>先读 release notes，确认有没有数据库 schema 迁移。</li><li>做快照：按上述方式备份，并记录当前镜像 digest。</li><li>拉取新镜像、重启服务，紧盯健康端点和错误率。</li><li>回归验证：跑冒烟套件（创建密钥 → 发起一次对话请求 → 确认产生用量记录）。</li><li>准备好回滚：上一个镜像 digest 加恢复后的数据库。因为演练过，回滚耗时是每套环境实测出来的数字，不是估计。</li>
 </ol>
 
 <h2>5 · 监控</h2>
 <ul>
-<li><code>/health</code> 端点由外部探针巡检，基于状态变化告警（故障一条、恢复一条——不刷屏）。</li><li>主机上的磁盘、内存与证书到期检查。</li><li>用量异常复盘：某把虚拟密钥的突增应当是一次对话，而不是一个悬案。</li>
+<li><code>/health</code> 端点由外部探针巡检，按状态变化告警——故障一条、恢复一条，不刷屏。</li><li>主机层面持续检查磁盘、内存与证书有效期。</li><li>用量异常必须查明归属：某把虚拟密钥的流量突增，应当能定位到一次具体调用，而不是不了了之。</li>
 </ul>
 
 </main>

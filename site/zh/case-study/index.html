@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>案例研究：迁移、路由与故障转移 — AI Gateway Lab</title>
-<meta name="description" content="一次匿名化的网关交付：收拢散落的 API 密钥、增加模型路由，并扛过一次上游宕机。">
+<title>案例复盘：密钥收拢、模型路由与一次上游故障 — AI Gateway Lab</title>
+<meta name="description" content="一次匿名化的网关交付复盘：收拢散落的 API 密钥、建立模型路由，并平稳扛过一次上游服务商故障。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/case-study/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/case-study/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/case-study/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/case-study/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="案例研究：迁移、路由与故障转移 — AI Gateway Lab">
-<meta property="og:description" content="一次匿名化的网关交付：收拢散落的 API 密钥、增加模型路由，并扛过一次上游宕机。">
+<meta property="og:title" content="案例复盘：密钥收拢、模型路由与一次上游故障 — AI Gateway Lab">
+<meta property="og:description" content="一次匿名化的网关交付复盘：收拢散落的 API 密钥、建立模型路由，并平稳扛过一次上游服务商故障。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/case-study/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -37,38 +37,37 @@
 </div></nav>
 <main id="main">
 
-<h1>案例研究</h1>
-<div class="notice">由真实的自托管网关运维工作匿名化、泛化而来。身份信息、主机名、精确数字与厂商组合均已修改；时间线结构与故障模式才是要传达的经验。下文数字用于说明模式，不是账单记录。</div><h2>起点</h2>
-<p>一个小型产品团队用三个服务对接两家 AI 服务商。每个服务在自己的 env 文件里各存一把服务商密钥；其中一把曾在一次事故中经聊天工具转发过、此后从未轮换。没有按团队的用量视图——账单就是一个总数。</p><h2>阶段 1 · 收拢（第 1 周）</h2>
+<h1>案例复盘</h1>
+<div class="notice">本案例由真实的自托管网关交付经历匿名化、泛化而来。身份信息、主机名、具体数字与厂商组合均已调整；值得借鉴的是时间线结构与故障处理模式。文中数字仅用于说明，不是账单记录。</div><h2>交付前的状况</h2>
+<p>一个小型产品团队，三个服务对接两家 AI 服务商。每个服务各自在 env 文件里存了一把服务商密钥，其中一把曾在一次事故排查中被贴进聊天工具转发过，此后再没轮换。用量没有按团队的视图，账单只有一个总数。</p><h2>第一阶段 · 收拢密钥（第 1 周）</h2>
 <ul>
 <li>在内部子域名上部署网关（Docker Compose、非 root、只读根文件系统），前置
-Caddy，启用 HTTPS 与 HSTS。</li><li>两把服务商密钥全部移入密钥库；每个服务发一把虚拟密钥，带月度预算与模型白名单。</li><li>各服务只改 <code>base_url</code> 和密钥即完成切换——不改代码，因为网关说的是同一种 API 方言。</li><li>在切换<em>之后</em>轮换那把经聊天泄漏的服务商密钥；客户端零改动——这正是加一层间接的意义。</li>
+Caddy，配齐 HTTPS 与 HSTS。</li><li>两把服务商密钥全部收入密钥库；每个服务改发一把虚拟密钥，附带月度预算与模型白名单。</li><li>各服务只需修改 <code>base_url</code> 和密钥就完成了切换——网关说的是同一种 API 方言，业务代码一行不动。</li><li>切换完成<em>之后</em>，再轮换那把在聊天工具里泄露过的密钥。客户端零改动——这正是加一层网关的意义所在。</li>
 </ul>
 
-<h2>阶段 2 · 路由策略（第 2 周）</h2>
+<h2>第二阶段 · 路由策略（第 2 周）</h2>
 <ul>
-<li>内部工具走廉价快速的模型等级，面向客户的功能走高级等级——用密钥强制执行，而不是靠自觉。</li><li>按两周实测流量为每把密钥设定速率上限。</li><li>每夜加密备份，外部健康探针基于状态变化告警。</li>
+<li>内部工具走低价快速的模型档位，面向客户的功能走高级档位——用密钥策略强制执行，不靠开发者自觉。</li><li>依据两周实测流量，为每把密钥设定速率上限。</li><li>启用每夜加密备份；外部健康探针按状态变化告警。</li>
 </ul>
 
-<h2>阶段 3 · 那次"值回票价"的宕机</h2>
-<p>几周后，主力服务商出现局部故障——错误率与延迟升高（任何一家大服务商的
-status page 存档里都能找到这个模式）。以下是网关视角的时间线，<a href="../demo/">演示</a>里用合成数据复现了它：</p>
+<h2>第三阶段 · 一次真正检验价值的故障</h2>
+<p>上线数周后，主力服务商出现区域性故障，错误率与延迟同时飙升（这类模式在任何一家大型服务商的 status page 历史里都能找到）。以下是网关视角的时间线，<a href="../demo/">演示</a>中用合成数据复现了同一过程：</p>
 <div class="diagram">
-T+0m   上游 A 错误率超阈值；健康检查将 A 标记为 degraded
-T+0m   路由器开始把失败请求重试到同等级的上游 B
-T+2m   探针告警一次："upstream-a: FAIL"——一条消息，不刷屏
-T+31m  服务商恢复；健康检查连续两次通过；A 重回轮转
+T+0m   上游 A 错误率超过阈值；健康检查将 A 标记为 degraded
+T+0m   路由器开始把失败请求重试到同档位的上游 B
+T+2m   探针告警一次："upstream-a: FAIL"——只此一条，不刷屏
+T+31m  服务商恢复；健康检查连续两次通过；A 重新进入轮转
 T+31m  探针告警一次："upstream-a: RECOVERED"
-客户可见影响：约 2 分钟的 p95 延迟升高；没有 5xx 爆发
+客户可感知的影响：约 2 分钟的 p95 延迟升高；没有出现 5xx 峰值
 </div>
 
-<h2>让它变得无聊的原因（这就是目标）</h2>
+<h2>为什么这次故障如此平淡（这正是设计目标）</h2>
 <ul>
-<li>故障转移在交接时<em>做过强制故障演练</em>——事故发生时它是第二次运行，不是第一次。</li><li>告警去重意味着两条消息，而不是两百条。</li><li>复盘只写了一段话，因为审计日志里已经有完整时间线。</li>
+<li>故障转移在交接时做过<em>强制断流演练</em>——真实事故发生时，它已经是第二次运行。</li><li>告警做了去重，最终只有两条消息，而不是两百条。</li><li>复盘报告只写了一段话，因为完整时间线本来就在审计日志里。</li>
 </ul>
 
 <h2>交接</h2>
-<p>团队拿到 runbook、恢复演练录屏和管理员权限。我的参与按设计终止；系统不需要我也能运转——这就是交付物。</p>
+<p>团队最终拿到 runbook、恢复演练录屏和全部管理员权限。外部参与到此为止；系统此后独立运转，不依赖任何个人——这正是本次交付的验收标准。</p>
 
 </main>
 <footer><div class="foot-inner">

@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>在线演示 — 模拟网关控制台 — AI Gateway Lab</title>
-<meta name="description" content="自托管 AI 网关的只读演示控制台：合成的账号、密钥、请求日志与一次故障转移回放。">
+<meta name="description" content="自托管 AI 网关的演示控制台：合成的上游、密钥、请求日志，并可回放一次故障转移。">
 <link rel="canonical" href="https://aigatewaylab.xyz/zh/demo/">
 <link rel="alternate" hreflang="en" href="https://aigatewaylab.xyz/demo/">
 <link rel="alternate" hreflang="zh-Hans" href="https://aigatewaylab.xyz/zh/demo/">
 <link rel="alternate" hreflang="x-default" href="https://aigatewaylab.xyz/demo/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="在线演示 — 模拟网关控制台 — AI Gateway Lab">
-<meta property="og:description" content="自托管 AI 网关的只读演示控制台：合成的账号、密钥、请求日志与一次故障转移回放。">
+<meta property="og:description" content="自托管 AI 网关的演示控制台：合成的上游、密钥、请求日志，并可回放一次故障转移。">
 <meta property="og:url" content="https://aigatewaylab.xyz/zh/demo/">
 <meta property="og:site_name" content="AI Gateway Lab">
 <meta name="twitter:card" content="summary">
@@ -38,19 +38,18 @@
 <main id="main">
 
 <h1>演示控制台</h1>
-<div class="notice"><strong>以下内容全部是合成数据。</strong>上游是模拟的，账号和余额是假的，请求日志是生成的。本站没有连接任何真实服务商账号。状态每
-15 分钟自动重置；所有写操作只作用于浏览器内的一次性副本。控制台文案保留英文，与生产环境的终端习惯一致。</div>
+<div class="notice"><strong>以下内容全部为合成数据。</strong>上游是模拟的，账号与余额是虚构的，请求日志是程序生成的。本站未接入任何真实服务商账号。状态每 15 分钟自动重置，所有写操作只影响浏览器本地的一次性副本。控制台内文案保留英文，与生产环境的终端习惯保持一致。</div>
 
 <div class="demo-toolbar">
   <span class="stat">demo state: <span id="d-age">fresh</span></span>
   <button class="btn ghost" id="d-reset" type="button">重置演示状态</button><button class="btn ghost" id="d-replay" type="button">回放故障转移事件</button>
 </div>
 
-<h2>上游健康度</h2>
+<h2>上游健康状态</h2>
 <div id="d-upstreams" class="grid c3"></div>
 
 <h2>虚拟密钥</h2>
-<p class="dim">创建、吊销，然后观察审计日志的变化。密钥只完整显示一次，之后只显示前缀——与生产环境同一套策略。</p>
+<p class="dim">试着创建、吊销几把密钥，观察审计日志的联动变化。密钥仅在创建时完整显示一次，此后只显示前缀——与生产环境执行同一套策略。</p>
 <p><button class="btn" id="d-newkey" type="button">+ 创建虚拟密钥</button></p>
 <div class="scroll-x"><table id="d-keys"></table></div>
 
