@@ -267,3 +267,8 @@ footer { border-top: 1px solid var(--border); margin-top: 40px; background: var(
   html { scroll-behavior: auto; }
   * { transition: none !important; animation: none !important; }
 }
+
+/* contact plain-text address under hero CTA */
+.contact-plain { margin-top: .6rem; font-size: .95rem; }
+.contact-addr { user-select: all; font-family: var(--mono, ui-monospace, monospace); }
+.copy-hint { margin-left: .5rem; color: var(--accent, #6366f1); font-size: .85rem; }

@@ -75,16 +75,15 @@ root），不会出现在日志、报错信息或返回给客户端的任何内�
 
 <h2>故障域</h2>
 <ul>
-<li><strong>上游服务商故障：</strong>健康检查将其标记为不健康，路由器把请求自动重试到同一档位的其他服务商。<a href="../case-study/">案例复盘</a>中有一条结构真实的故障转移时间线（数据为合成）。</li><li><strong>网关进程崩溃：</strong>systemd/compose 自动重启，外部健康探针在状态变化时各告警一次（形态类似
-<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
-项目）。</li><li><strong>主机整体丢失：</strong>数据库与配置每夜加密备份；恢复流程写成文档并实际演练过。恢复耗时取决于镜像拉取与 DNS 生效速度，交接时按实际环境测出，不做空头估算。</li>
+<li><strong>上游服务商故障：</strong>健康检查将其标记为不健康，路由器把请求自动重试到同一档位的其他服务商。<a href="../case-study/">案例复盘</a>中有一条结构真实的故障转移时间线（数据为合成）。</li><li><strong>网关进程崩溃：</strong>systemd/compose 自动重启，外部健康探针在状态变化时各告警一次。</li><li><strong>主机整体丢失：</strong>数据库与配置每夜加密备份；恢复流程写成文档并实际演练过。恢复耗时取决于镜像拉取与 DNS 生效速度，交接时按实际环境测出，不做空头估算。</li>
 </ul>
 
 </main>
 <footer><div class="foot-inner">
-  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="../../zh/security/">安全说明</a></p>
+  <p>独立部署演示站，与 Sub2API 项目及任何上游 AI 服务商均无隶属或合作关系。</p><p>演示数据均为合成数据。本站任何位置都不展示真实的服务商账号、凭证或流量。</p><p>联系：<a class="contact-mail" href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="../../zh/security/">安全说明</a></p>
   <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
 </div></footer>
 <script src="../../static/js/theme-ui.js"></script>
+<script src="../../static/js/contact.js" defer></script>
 </body>
 </html>

@@ -13,9 +13,11 @@ HOME_BODY = """
 teams that want one controlled entry point for their LLM traffic — with their
 own keys, their own logs, and their own infrastructure.</p>
 <p class="cta-row">
-  <a class="btn" href="mailto:hello@aigatewaylab.xyz">Contact me</a>
-  <a class="btn ghost btn-gap" href="demo/">See the live demo</a>
+  <a class="btn contact-mail" href="mailto:hello@aigatewaylab.xyz">Contact me</a>
+  <a class="btn ghost btn-gap" href="demo/">View live demo</a>
 </p>
+<p class="contact-plain dim">Email: <span class="contact-addr">hello@aigatewaylab.xyz</span>
+<span class="copy-hint" aria-live="polite"></span></p>
 </div>
 <div class="hero-console" aria-label="Example deployment session (static illustration)">
   <div class="hc-bar"><span class="hc-dot"></span><span class="hc-dot"></span><span class="hc-dot"></span>deploy &middot; verify &middot; hand over</div>
@@ -134,9 +136,7 @@ unhealthy; router retries the request against the next configured provider
 offering the same model class. The <a href="../case-study/">case study</a>
 shows a real failover timeline (with synthetic data).</li>
 <li><strong>Gateway crash:</strong> systemd/compose restart policy plus an
-external health probe (the kind shown in my
-<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
-project) alerting on state change.</li>
+external health probe that alerts once per state change.</li>
 <li><strong>Host loss:</strong> nightly encrypted backup of the database and
 config; restore drill documented and rehearsed — restore time depends on
 image pull and DNS, measured per deployment during handover.</li>

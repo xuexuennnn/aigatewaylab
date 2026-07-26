@@ -117,9 +117,10 @@ def page(title: str, desc: str, body: str, active: str, depth: int = 1,
 <footer><div class="foot-inner">
   <p>{DISCLAIMER[lang]}</p>
   <p>{FOOT_SYNTH[lang]}</p>
-  <p>{('Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="' + root + 'security/">Security</a>') if lang == 'en' else ('联系：<a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub 展示仓库</a> &middot; <a href="' + root + 'zh/security/">安全说明</a>')}</p>
+  <p>{('Contact: <a class="contact-mail" href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="' + root + 'security/">Security</a>') if lang == 'en' else ('联系：<a class="contact-mail" href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="' + root + 'zh/security/">安全说明</a>')}</p>
   <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
 </div></footer>
 <script src="{root}static/js/theme-ui.js"></script>
+<script src="{root}static/js/contact.js" defer></script>
 </body>
 </html>"""

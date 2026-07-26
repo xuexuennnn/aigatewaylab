@@ -91,9 +91,7 @@ unhealthy; router retries the request against the next configured provider
 offering the same model class. The <a href="../case-study/">case study</a>
 shows a real failover timeline (with synthetic data).</li>
 <li><strong>Gateway crash:</strong> systemd/compose restart policy plus an
-external health probe (the kind shown in my
-<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
-project) alerting on state change.</li>
+external health probe that alerts once per state change.</li>
 <li><strong>Host loss:</strong> nightly encrypted backup of the database and
 config; restore drill documented and rehearsed — restore time depends on
 image pull and DNS, measured per deployment during handover.</li>
@@ -103,9 +101,10 @@ image pull and DNS, measured per deployment during handover.</li>
 <footer><div class="foot-inner">
   <p>Independent deployment demonstration. Not affiliated with the Sub2API project or any upstream AI provider.</p>
   <p>Demo data is synthetic. No real provider accounts, credentials, or traffic are shown anywhere on this site.</p>
-  <p>Contact: <a href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="https://github.com/xuexuennnn/ai-gateway-deployment-showcase" rel="noopener">GitHub showcase</a> &middot; <a href="../security/">Security</a></p>
+  <p>Contact: <a class="contact-mail" href="mailto:hello@aigatewaylab.xyz">hello@aigatewaylab.xyz</a> &middot; <a href="../security/">Security</a></p>
   <p>&copy; 2026 AI Gateway Lab &middot; aigatewaylab.xyz</p>
 </div></footer>
 <script src="../static/js/theme-ui.js"></script>
+<script src="../static/js/contact.js" defer></script>
 </body>
 </html>

@@ -13,9 +13,11 @@ HOME_BODY = """
 <p class="lead">为需要统一管理 LLM 流量入口的团队提供网关部署、安全加固与
 长期运维支持。密钥、日志、基础设施，全部掌握在你自己手里。</p>
 <p class="cta-row">
-  <a class="btn" href="mailto:hello@aigatewaylab.xyz">联系我</a>
+  <a class="btn contact-mail" href="mailto:hello@aigatewaylab.xyz">联系我</a>
   <a class="btn ghost btn-gap" href="demo/">查看在线演示</a>
 </p>
+<p class="contact-plain dim">邮箱：<span class="contact-addr">hello@aigatewaylab.xyz</span>
+<span class="copy-hint" aria-live="polite"></span></p>
 </div>
 <div class="hero-console" aria-label="部署流程示意（静态示例）">
   <div class="hc-bar"><span class="hc-dot"></span><span class="hc-dot"></span><span class="hc-dot"></span>部署 &middot; 验证 &middot; 交接</div>
@@ -125,9 +127,7 @@ root），不会出现在日志、报错信息或返回给客户端的任何内�
 自动重试到同一档位的其他服务商。<a href="../case-study/">案例复盘</a>中有一
 条结构真实的故障转移时间线（数据为合成）。</li>
 <li><strong>网关进程崩溃：</strong>systemd/compose 自动重启，外部健康探针在
-状态变化时各告警一次（形态类似
-<a href="https://github.com/xuexuennnn/sentinel" rel="noopener">sentinel</a>
-项目）。</li>
+状态变化时各告警一次。</li>
 <li><strong>主机整体丢失：</strong>数据库与配置每夜加密备份；恢复流程写成文
 档并实际演练过。恢复耗时取决于镜像拉取与 DNS 生效速度，交接时按实际环境测
 出，不做空头估算。</li>
