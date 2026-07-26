@@ -26,7 +26,7 @@ NAV = {
         ("/demo/", "在线演示"),
         ("/docs/", "部署文档"),
         ("/security/", "安全"),
-        ("/case-study/", "案例研究"),
+        ("/case-study/", "案例复盘"),
         ("/compliance/", "合规"),
     ],
 }
