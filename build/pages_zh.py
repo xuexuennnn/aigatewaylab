@@ -13,7 +13,7 @@ HOME_BODY = """
 <p class="lead">为需要统一管理 LLM 流量入口的团队提供网关部署、安全加固与
 长期运维支持。密钥、日志、基础设施，全部掌握在你自己手里。</p>
 <p class="cta-row">
-  <a class="btn contact-mail" href="mailto:hello@aigatewaylab.xyz">联系我</a>
+  <a class="btn contact-mail" href="mailto:hello@aigatewaylab.xyz?subject=Gateway%20deployment%20review">申请部署评估</a>
   <a class="btn ghost btn-gap" href="demo/">查看在线演示</a>
 </p>
 <p class="contact-plain dim">邮箱：<span class="contact-addr">hello@aigatewaylab.xyz</span>
@@ -31,6 +31,16 @@ HOME_BODY = """
 <span class="hc-c"># 交接内容：运维手册 + 备份方案 + 完全属于你的密钥</span></code></pre>
 </div>
 </div>
+
+<section class="case-proof">
+<h2>先看交付方法，不靠宣传口号</h2>
+<div class="proof-panel">
+  <div><span class="proof-step">01</span><h3>检查</h3><p class="dim">修改前先核查主机、网络暴露面、密钥保管与回滚路径。</p></div>
+  <div><span class="proof-step">02</span><h3>部署</h3><p class="dim">按书面配置落地，缩小公网暴露面，并使用可吊销的虚拟密钥。</p></div>
+  <div><span class="proof-step">03</span><h3>验证</h3><p class="dim">实际探测 TLS、健康状态、故障转移、日志脱敏、备份和恢复，不把“容器在运行”当作交付证据。</p></div>
+</div>
+<p>可以先看<a href="case-study/">匿名化案例模式</a>，或直接检查<a href="docs/">公开版运维手册</a>。</p>
+</section>
 
 <h2>团队常见的三个问题</h2>
 <div class="grid c3">
@@ -71,6 +81,13 @@ HOME_BODY = """
 API 密钥</strong>（或你的组织获得正式授权使用的密钥）产生的流量。以下业务
 一概不做：将消费级订阅转售为 API、共享或拼池账号配额、绕过服务商速率限制、
 提取账号凭证。完整清单见<a href="compliance/">合规页</a>。</div>
+
+<section class="final-cta">
+  <div><p class="kicker">先确认环境，再谈部署方案</p>
+  <h2>需要一套交接后<wbr>仍能独立运维的网关？</h2>
+  <p class="dim">邮件说明目标软件、服务器限制和需要接入的上游。我会先确认是否适合承接及工作范围，再开始部署。</p></div>
+  <a class="btn contact-mail" href="mailto:hello@aigatewaylab.xyz?subject=Gateway%20deployment%20review">申请部署评估</a>
+</section>
 """
 
 ARCH_TITLE = "网关架构"

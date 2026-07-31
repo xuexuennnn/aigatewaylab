@@ -20,6 +20,7 @@ const TEAMS = ["search-team", "support-bot", "analytics", "internal-tools"];
 
 function freshState() {
   const rnd = mulberry32(20260726);
+  const now = Date.now();
   const upstreams = [
     { name: "mock-upstream-a", cls: "premium", healthy: true, p95: 820, load: 0.42 },
     { name: "mock-upstream-b", cls: "premium", healthy: true, p95: 1040, load: 0.31 },
@@ -35,12 +36,11 @@ function freshState() {
     revoked: false,
   }));
   const log = [];
-  let ts = Date.now() - 40 * 60000;
   for (let i = 0; i < 24; i++) {
     const k = keys[Math.floor(rnd() * keys.length)];
     const up = upstreams[Math.floor(rnd() * 2)];
     log.push({
-      t: ts += Math.floor(rnd() * 200000),
+      t: now - (24 - i) * 90000 - Math.floor(rnd() * 60000),
       key: k.prefix + "-****",
       model: k.models[Math.floor(rnd() * k.models.length)],
       upstream: up.name,
@@ -50,11 +50,11 @@ function freshState() {
     });
   }
   return {
-    created: Date.now(),
+    created: now,
     upstreams, keys, log,
     audit: [
-      { t: Date.now() - 86400000 * 3, ev: "config.update", detail: "routing: premium pool = upstream-a,upstream-b" },
-      { t: Date.now() - 86400000, ev: "key.create", detail: "vk-5e90 (internal-tools, budget $40)" },
+      { t: now - 86400000 * 3, ev: "config.update", detail: "routing: premium pool = upstream-a,upstream-b" },
+      { t: now - 86400000, ev: "key.create", detail: "vk-5e90 (internal-tools, budget $40)" },
     ],
   };
 }
@@ -93,7 +93,7 @@ function render() {
   });
 
   $("d-keys").innerHTML =
-    "<tr><th>key</th><th>team</th><th>models</th><th>budget</th><th>rpm cap</th><th>status</th><th></th></tr>" +
+    "<tr><th>key</th><th>team</th><th>models</th><th>spent / limit</th><th>rpm cap</th><th>status</th><th>actions</th></tr>" +
     S.keys.map((k, i) => `
       <tr>
         <td><code>${esc(k.prefix)}-****</code></td>
@@ -107,7 +107,7 @@ function render() {
 
   $("d-log").innerHTML =
     "<tr><th>time</th><th>key</th><th>model</th><th>upstream</th><th>tokens</th><th>latency</th><th>status</th></tr>" +
-    S.log.slice(-14).reverse().map((r) => `
+    S.log.slice().sort((a, b) => b.t - a.t).slice(0, 14).map((r) => `
       <tr><td class="dim">${fmtT(r.t)}</td><td><code>${esc(r.key)}</code></td>
       <td>${esc(r.model)}</td><td class="dim">${esc(r.upstream)}</td>
       <td>${r.tokens}</td><td>${r.ms}ms</td>
@@ -115,7 +115,7 @@ function render() {
 
   $("d-audit").innerHTML =
     "<tr><th>time</th><th>event</th><th>detail</th></tr>" +
-    S.audit.slice(-10).reverse().map((a) => `
+    S.audit.slice().sort((a, b) => b.t - a.t).slice(0, 10).map((a) => `
       <tr><td class="dim">${new Date(a.t).toISOString().slice(0, 19)}Z</td>
       <td><code>${esc(a.ev)}</code></td><td class="dim">${esc(a.detail)}</td></tr>`).join("");
 }
@@ -156,7 +156,7 @@ function replayIncident() {
   audit("route.failover", "premium traffic retrying on mock-upstream-b");
   const now = Date.now();
   for (let i = 0; i < 4; i++) {
-    S.log.push({ t: now + i * 800, key: "vk-a1f3-****", model: "gpt-class-large",
+    S.log.push({ t: now - (3 - i) * 800, key: "vk-a1f3-****", model: "gpt-class-large",
       upstream: "mock-upstream-b", tokens: 900 + i * 137, ms: 1400 + i * 90, status: 200 });
   }
   save(); render();
