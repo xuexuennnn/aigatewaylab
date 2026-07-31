@@ -163,7 +163,7 @@ html[lang="zh-Hans"] h1 { letter-spacing: 0; }
 .no-js .theme-cluster { display: none; }
 
 /* ---------- layout ---------- */
-main { max-width: 1080px; margin: 0 auto; padding: 52px 24px 80px; }
+main { max-width: 1080px; margin: 0 auto; padding: 52px 24px 48px; }
 h1 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); line-height: 1.22; margin-bottom: 12px; letter-spacing: -0.01em; }
 h2 { font-size: 1.45rem; margin: 44px 0 12px; letter-spacing: -0.005em; }
 h3 { font-size: 1.12rem; margin: 24px 0 8px; }
@@ -214,7 +214,7 @@ td.ok-cell { color: var(--ok); }
 
 /* ---------- cards ---------- */
 .grid { display: grid; gap: 18px; margin: 24px 0; }
-.grid.c2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid.c3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
 .card h3 { margin-top: 0; }
@@ -222,6 +222,25 @@ td.ok-cell { color: var(--ok); }
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .card.glass { -webkit-backdrop-filter: blur(10px) saturate(1.25); backdrop-filter: blur(10px) saturate(1.25); }
 }
+
+/* ---------- proof + closing CTA ---------- */
+.case-proof { margin: 46px 0 12px; }
+.proof-panel {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  margin: 20px 0 16px; overflow: hidden; border: 1px solid var(--border);
+  border-radius: 12px; background: var(--border);
+}
+.proof-panel > div { background: var(--panel); padding: 20px; }
+.proof-panel h3 { margin: 8px 0 6px; }
+.proof-step { color: var(--accent); font: 600 12px/1 var(--mono); letter-spacing: .1em; }
+.final-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 28px;
+  margin-top: 52px; padding: 28px; border: 1px solid var(--glass-brd);
+  border-radius: 14px; background: var(--glass); box-shadow: var(--shadow);
+}
+.final-cta h2 { margin: 6px 0 8px; }
+.final-cta p { margin-bottom: 0; max-width: 680px; }
+.final-cta .btn { flex: 0 0 auto; }
 
 /* ---------- tables / tags / notice ---------- */
 table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -260,6 +279,18 @@ footer { border-top: 1px solid var(--border); margin-top: 40px; background: var(
   .theme-cluster { margin-left: 0; width: 100%; padding-top: 8px; border-top: 1px solid var(--glass-brd); }
   main { padding: 32px 16px 60px; }
   .hero { gap: 24px; }
+  .cta-row { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .cta-row .btn { text-align: center; }
+  .btn-gap { margin-left: 0; }
+  .grid.c2 { grid-template-columns: 1fr; }
+  .proof-panel { grid-template-columns: 1fr; }
+  .final-cta { align-items: flex-start; flex-direction: column; padding: 22px; }
+  html[lang="zh-Hans"] main p, html[lang="zh-Hans"] main li,
+  html[lang="zh-Hans"] main h1, html[lang="zh-Hans"] main h2,
+  html[lang="zh-Hans"] main h3, html[lang="zh-Hans"] main .notice {
+    word-break: normal; overflow-wrap: break-word; line-break: strict;
+  }
+  html[lang="zh-Hans"] main code, html[lang="zh-Hans"] main pre { word-break: normal; }
 }
 
 /* ---------- reduced motion ---------- */

@@ -90,6 +90,8 @@ with sync_playwright() as pw:
             if not meta["canonical"]: issue(f"{key}: missing canonical")
             if meta["navLinks"] != 8: issue(f"{key}: nav has {meta['navLinks']} links, expected 8 (7 nav + lang)")
             if meta["h1"] != 1: issue(f"{key}: {meta['h1']} h1 elements")
+            if path in ("/", "/zh/") and page.locator("main .final-cta").count() != 1:
+                issue(f"{key}: missing final CTA")
             page.close()
         ctx.close()
 
@@ -117,6 +119,21 @@ with sync_playwright() as pw:
     else:
         d["keys_after_create"] = None
         issue("demo: no #d-newkey button found")
+
+    # replay must leave the request log in strict newest-first order
+    page.locator("#d-replay").click()
+    time.sleep(0.3)
+    d["log_times_after_replay"] = page.locator("#d-log tr td:first-child").all_inner_texts()
+    def clock_seconds(value):
+        h, m, s = value.removesuffix("Z").split(":")
+        return int(h) * 3600 + int(m) * 60 + int(s)
+    log_seconds = [clock_seconds(value) for value in d["log_times_after_replay"]]
+    if log_seconds != sorted(log_seconds, reverse=True):
+        issue(f"demo: request log not newest-first {d['log_times_after_replay'][:8]}")
+    d["action_header"] = page.locator("#d-keys th").last.inner_text().strip()
+    d["spend_header"] = page.locator("#d-keys th").nth(3).inner_text().strip()
+    if d["action_header"] != "actions": issue(f"demo: action header is {d['action_header']!r}")
+    if d["spend_header"] != "spent / limit": issue(f"demo: spend header is {d['spend_header']!r}")
 
     # revoke first key
     rev = page.locator("#d-keys button[data-revoke]").first
@@ -156,7 +173,7 @@ with sync_playwright() as pw:
         fi = page.evaluate("() => { const a=document.activeElement; return a ? (a.tagName + '|' + (a.textContent||'').trim().slice(0,25)) : 'none'; }")
         focus_chain.append(fi)
     report["keyboard_focus_chain"] = focus_chain
-    if not any("Contact" in f or "联系" in f for f in focus_chain):
+    if not any("Request a deployment" in f or "申请部署" in f for f in focus_chain):
         issue("keyboard: primary CTA not reachable in 16 tabs")
     ctx.close()
 
