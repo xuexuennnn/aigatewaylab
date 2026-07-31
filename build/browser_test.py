@@ -13,7 +13,7 @@ Saves screenshots to browser-test/shots/ and a JSON report.
 import json, os, sys, time
 from playwright.sync_api import sync_playwright
 
-BASE = "http://127.0.0.1:8899"
+BASE = os.environ.get("AGL_BASE_URL", "http://127.0.0.1:8899")
 PAGES_EN = ["/", "/architecture/", "/demo/", "/docs/", "/security/", "/case-study/", "/compliance/"]
 PAGES = PAGES_EN + ["/zh" + p for p in PAGES_EN]
 VIEWPORTS = [
